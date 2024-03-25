@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+	id("maven-publish")
+}
+
+group = 'me.celestialfault.celestialconfig'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.jetbrains:annotations:24.0.0'
+    implementation 'com.google.code.gson:gson:2.10.1'
+}
+
+java {
+    targetCompatibility = 8
+	sourceCompatibility = 8
+    withSourcesJar()
+}
+
+publishing {
+	repositories {
+		maven {
+			name = "GitHubPackages"
+			url = uri("https://maven.pkg.github.com/celestialfault/celestial-config")
+			credentials {
+				username = System.getenv("GITHUB_ACTOR")
+				password = System.getenv("GITHUB_TOKEN")
+			}
+		}
+	}
+	publications {
+		gpr(MavenPublication) {
+			from(components.java)
+		}
+	}
+}
