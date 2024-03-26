@@ -3,6 +3,7 @@ package me.celestialfault.celestialconfig.variables;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import me.celestialfault.celestialconfig.IConfigVariable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,7 +35,7 @@ public class Map2ObjectVariable<T> implements IConfigVariable<Map<String, T>> {
 	}
 
 	@Override
-	public Map<String, T> get() {
+	public @NotNull Map<String, T> get() {
 		return map;
 	}
 

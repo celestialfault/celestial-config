@@ -31,12 +31,8 @@ import java.util.Optional;
  *
  * <pre>{@code
  * class MyMap extends VariableMap {
- *     public MyMap() {
- *         super("");
- *     }
- *
  *     public MyMap(JsonElement element) {
- *         this();
+ *         super("");
  *         this.load(element);
  *     }
  *
@@ -45,13 +41,13 @@ import java.util.Optional;
  * }
  *
  * public final ArrayVariable<MyMap> arrayMap = new ArrayVariable<>("array_map",
- *          v -> v.save().orElseGet(JsonObject::new), MyMap::new)
+ *          v -> v.save().orElse(null), MyMap::new)
  * }</pre>
  */
 public abstract class VariableMap extends VariableScanner implements IConfigVariable<Map<String, IConfigVariable<?>>> {
 	private final String key;
 
-	public VariableMap(String key) {
+	protected VariableMap(String key) {
 		this.key = key;
 	}
 

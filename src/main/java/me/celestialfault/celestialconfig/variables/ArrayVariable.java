@@ -3,6 +3,7 @@ package me.celestialfault.celestialconfig.variables;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import me.celestialfault.celestialconfig.IConfigVariable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -51,7 +52,7 @@ public class ArrayVariable<T> implements IConfigVariable<List<T>> {
 	}
 
 	@Override
-	public List<T> get() {
+	public @NotNull List<T> get() {
 		return this.list;
 	}
 

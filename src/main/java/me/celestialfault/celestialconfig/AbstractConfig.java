@@ -1,16 +1,20 @@
 package me.celestialfault.celestialconfig;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonWriter;
 import me.celestialfault.celestialconfig.impl.VariableScanner;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <p>Simple yet elegant wrapper around GSON for loading configuration files.</p>
@@ -34,7 +38,7 @@ import java.nio.file.Path;
  *         super(path);
  *     }
  *
- *     // note that variables MUST be final and non-static,
+ *     // note that variables MUST be public, final, and non-static;
  *     // otherwise they will not be loaded or saved
  *     public final StringVariable string = new StringVariable("string_key", "Default value");
  * }
@@ -56,6 +60,17 @@ import java.nio.file.Path;
 public abstract class AbstractConfig extends VariableScanner {
 
 	private static final TypeAdapter<JsonObject> ADAPTER = new Gson().getAdapter(JsonObject.class);
+
+	/**
+	 * Controls the indentation of the saved file
+	 *
+	 * @see JsonWriter#setIndent(String)
+	 */
+	protected @NotNull String indent = "\t";
+	/**
+	 * A store of keys which were not accepted by any variables when loading the configuration file from disk
+	 */
+	protected final Map<String, JsonElement> unacceptedKeys = new HashMap<>();
 
 	protected final Path path;
 	protected final boolean createIfMissing;
@@ -98,9 +113,12 @@ public abstract class AbstractConfig extends VariableScanner {
 
 		try(FileReader reader = new FileReader(configFile)) {
 			JsonObject data = ADAPTER.fromJson(reader);
-			getVariables().forEach((name, variable) -> {
-				if(data.has(name)) {
-					variable.load(data.get(name));
+			Map<String, ? extends IConfigVariable<?>> variables = getVariables();
+			data.asMap().forEach((k, v) -> {
+				if(variables.containsKey(k)) {
+					variables.get(k).load(v);
+				} else {
+					unacceptedKeys.put(k, v);
 				}
 			});
 		}
@@ -113,11 +131,12 @@ public abstract class AbstractConfig extends VariableScanner {
 	public void save() throws IOException {
 		File configFile = path.toFile();
 		try(FileWriter writer = new FileWriter(configFile); JsonWriter jsonWriter = new JsonWriter(writer)) {
-			jsonWriter.setIndent("\t");
+			jsonWriter.setIndent(indent);
 			JsonObject object = new JsonObject();
 			getVariables().forEach((name, variable) -> {
 				variable.save().ifPresent(v -> object.add(name, v));
 			});
+			unacceptedKeys.forEach(object::add);
 			ADAPTER.write(jsonWriter, object);
 		}
 	}
