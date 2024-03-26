@@ -1,7 +1,7 @@
 package me.celestialfault.celestialconfig;
 
 import com.google.gson.JsonElement;
-import me.celestialfault.celestialconfig.variables.MapVariable;
+import me.celestialfault.celestialconfig.variables.VariableMap;
 import me.celestialfault.celestialconfig.variables.abstracts.ConfigVariable;
 import org.jetbrains.annotations.Nullable;
 
@@ -11,7 +11,7 @@ import java.util.Optional;
  * Configuration value interface; this is what stores your loaded configuration values.
  *
  * @see ConfigVariable
- * @see MapVariable
+ * @see VariableMap
  */
 public interface IConfigVariable<T> {
 	String getKey();

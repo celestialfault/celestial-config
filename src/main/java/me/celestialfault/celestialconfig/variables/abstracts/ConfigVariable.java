@@ -3,8 +3,11 @@ package me.celestialfault.celestialconfig.variables.abstracts;
 import me.celestialfault.celestialconfig.IConfigVariable;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Abstract configuration variable class for variable types that require little (if any at all) special handling
+ * to load and save.
+ */
 public abstract class ConfigVariable<T> implements IConfigVariable<T> {
-
 	protected final String key;
 	protected final @Nullable T defaultValue;
 	protected @Nullable T value;

@@ -19,7 +19,7 @@ public class ExampleConfig extends AbstractConfig {
 	public final ArrayVariable<Integer> array = new ArrayVariable<>("array", List.of(6), JsonPrimitive::new, JsonElement::getAsInt);
 	public final ExampleMap map = new ExampleMap();
 
-	public static class ExampleMap extends MapVariable {
+	public static class ExampleMap extends VariableMap {
 		public ExampleMap() {
 			super("map");
 		}

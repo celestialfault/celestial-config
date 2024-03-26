@@ -83,6 +83,10 @@ public abstract class AbstractConfig extends VariableScanner {
 		this.createIfMissing = createIfMissing;
 	}
 
+	/**
+	 * Load the configuration file saved on disk, or create a new one if it doesn't exist (and this
+	 * configuration class wasn't created with the relevant setting turned off).
+	 */
 	public void load() throws IOException {
 		File configFile = path.toFile();
 		if(!configFile.exists()) {
@@ -102,6 +106,9 @@ public abstract class AbstractConfig extends VariableScanner {
 		}
 	}
 
+	/**
+	 * Save all current configuration variables to the relevant file on disk
+	 */
 	@SuppressWarnings("CodeBlock2Expr")
 	public void save() throws IOException {
 		File configFile = path.toFile();

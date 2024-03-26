@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Map variable; this is intended to be used as a subclass.
+ * A map of differing variable types; this is designed to be used as a subclass with variables as fields.
  *
  * <h2>Example usage:</h2>
  *
@@ -17,7 +17,7 @@ import java.util.Optional;
  * class MyConfig extends AbstractConfig {
  *     public final MyMap map = new MyMap();
  *
- *     public static class MyMap extends MapVariable {
+ *     public static class MyMap extends VariableMap {
  *         public MyMap() {
  *             super("map");
  *         }
@@ -26,11 +26,32 @@ import java.util.Optional;
  *     }
  * }
  * }</pre>
+ *
+ * This could also be used as a type in {@link ArrayVariable arrays}:
+ *
+ * <pre>{@code
+ * class MyMap extends VariableMap {
+ *     public MyMap() {
+ *         super("");
+ *     }
+ *
+ *     public MyMap(JsonElement element) {
+ *         this();
+ *         this.load(element);
+ *     }
+ *
+ *     public final StringVariable name = new StringVariable("name", null);
+ *     public final DoubleVariable value = new DoubleVariable("value", 1);
+ * }
+ *
+ * public final ArrayVariable<MyMap> arrayMap = new ArrayVariable<>("array_map",
+ *          v -> v.save().orElseGet(JsonObject::new), MyMap::new)
+ * }</pre>
  */
-public abstract class MapVariable extends VariableScanner implements IConfigVariable<Map<String, IConfigVariable<?>>> {
+public abstract class VariableMap extends VariableScanner implements IConfigVariable<Map<String, IConfigVariable<?>>> {
 	private final String key;
 
-	public MapVariable(String key) {
+	public VariableMap(String key) {
 		this.key = key;
 	}
 
