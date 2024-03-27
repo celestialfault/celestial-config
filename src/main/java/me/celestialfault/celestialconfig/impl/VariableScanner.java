@@ -34,7 +34,7 @@ public abstract class VariableScanner {
 					}
 				})
 				.forEach(variable -> {
-					if(variables.containsKey(variable.getKey())) {
+					if(discovered.containsKey(variable.getKey())) {
 						throw new IllegalStateException("Key " + variable.getKey() + " is present twice!");
 					}
 					discovered.put(variable.getKey(), variable);
