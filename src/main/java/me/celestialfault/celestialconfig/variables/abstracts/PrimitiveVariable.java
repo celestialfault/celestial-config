@@ -1,6 +1,7 @@
 package me.celestialfault.celestialconfig.variables.abstracts;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,16 +30,14 @@ public abstract class PrimitiveVariable<T> extends ConfigVariable<T> {
 
 	/**
 	 * Convert the stored value in this variable to a {@link JsonPrimitive}
-	 *
-	 * @apiNote This will only be called if the return value of {@link #get()} is not {@code null}, and as such
-	 *          you can safely make use of methods like {@link Objects#requireNonNull(Object)} without worrying
-	 *          about potential runtime errors.
 	 */
 	protected abstract JsonPrimitive toPrimitive(@NotNull T value);
 
 	@Override
 	public final void load(JsonElement element) {
-		if(element.isJsonPrimitive() && isPrimitiveValid(element.getAsJsonPrimitive())) {
+		if(element.isJsonNull() && allowNulls) {
+			set(null);
+		} else if(element.isJsonPrimitive() && isPrimitiveValid(element.getAsJsonPrimitive())) {
 			set(fromPrimitive(element.getAsJsonPrimitive()));
 		}
 	}
@@ -47,7 +46,7 @@ public abstract class PrimitiveVariable<T> extends ConfigVariable<T> {
 	public final Optional<JsonElement> save() {
 		@Nullable T value = get();
 		if(value == null && defaultValue == null) {
-			return Optional.empty();
+			return Optional.ofNullable(allowNulls ? JsonNull.INSTANCE : null);
 		}
 		return Optional.of(toPrimitive(value != null ? value : defaultValue));
 	}
