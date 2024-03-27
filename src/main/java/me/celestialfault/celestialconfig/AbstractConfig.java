@@ -114,7 +114,9 @@ public abstract class AbstractConfig extends VariableScanner {
 		try(FileReader reader = new FileReader(configFile)) {
 			JsonObject data = ADAPTER.fromJson(reader);
 			Map<String, ? extends IConfigVariable<?>> variables = getVariables();
-			data.asMap().forEach((k, v) -> {
+			data.entrySet().forEach(entry -> {
+				String k = entry.getKey();
+				JsonElement v = entry.getValue();
 				if(variables.containsKey(k)) {
 					variables.get(k).load(v);
 				} else {
