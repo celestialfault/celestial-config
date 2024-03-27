@@ -17,7 +17,7 @@ public abstract class NumberVariable<T extends Number & Comparable<T>> extends P
 	@Override
 	public boolean validate(@Nullable T value) {
 		if(value == null) {
-			return true;
+			return allowNulls;
 		}
 		return (min == null || min.compareTo(value) <= 0)
 			&& (max == null || max.compareTo(value) >= 0);

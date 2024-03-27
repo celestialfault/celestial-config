@@ -20,10 +20,10 @@ public interface IConfigVariable<T> {
 	/**
 	 * Validate the current value
 	 *
-	 * @implNote The default implementation of this method always returns {@code true}
+	 * @implNote The default implementation of this method always returns {@code true} if the provided value is not {@code null}.
 	 */
 	default boolean validate(@Nullable T value) {
-		return true;
+		return value != null;
 	}
 
 	void load(JsonElement element);

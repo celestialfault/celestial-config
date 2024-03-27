@@ -9,19 +9,22 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * A map of differing variable types; this is designed to be used as a subclass with variables as fields.
+ * A map of differing variable types; this is designed to be used as a subclass with variables as fields, similarly
+ * to an {@link me.celestialfault.celestialconfig.AbstractConfig AbstractConfig}.
  *
  * <h2>Example usage:</h2>
  *
  * <pre>{@code
- * class MyConfig extends AbstractConfig {
+ * public final class MyConfig extends AbstractConfig {
+ *     // this field is how you access the variables contained in your map!
  *     public final MyMap map = new MyMap();
  *
  *     public static class MyMap extends VariableMap {
- *         public MyMap() {
+ *         private MyMap() {
  *             super("map");
  *         }
  *
+ *         // access with MyConfig#map.boolean
  *         public final BooleanVariable boolean = new BooleanVariable("bool", true);
  *     }
  * }
@@ -30,7 +33,7 @@ import java.util.Optional;
  * This could also be used as a type in {@link ArrayVariable arrays}:
  *
  * <pre>{@code
- * class MyMap extends VariableMap {
+ * public final class MyMap extends VariableMap {
  *     public MyMap(JsonElement element) {
  *         super("");
  *         this.load(element);
@@ -41,7 +44,7 @@ import java.util.Optional;
  * }
  *
  * public final ArrayVariable<MyMap> arrayMap = new ArrayVariable<>("array_map",
- *          v -> v.save().orElse(null), MyMap::new)
+ *          v -> v.save().orElse(null), MyMap::new);
  * }</pre>
  */
 public abstract class VariableMap extends VariableScanner implements IConfigVariable<Map<String, IConfigVariable<?>>> {
@@ -74,6 +77,7 @@ public abstract class VariableMap extends VariableScanner implements IConfigVari
 		}
 	}
 
+	@SuppressWarnings("CodeBlock2Expr")
 	@Override
 	public Optional<JsonElement> save() {
 		JsonObject obj = new JsonObject();

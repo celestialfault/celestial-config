@@ -27,7 +27,7 @@ import java.util.Map;
  * import java.nio.file.Path;
  * import java.nio.file.Paths;
  *
- * public class MyConfig extends AbstractConfig {
+ * public final class MyConfig extends AbstractConfig {
  *     public MyConfig() {
  *         // create a Path based on where your program is running
  *         super(Paths.get("").getAbsolutePath().resolve("config.json"));
@@ -89,7 +89,7 @@ public abstract class AbstractConfig extends VariableScanner {
 	 * if it doesn't already exist on disk.
 	 *
 	 * @param file            The path to where your config file should reside on disk
-	 * @param createIfMissing If {@code true}, {@link #load()} will call {@link #save()} if
+	 * @param createIfMissing If {@code true}, {@link #load()} will instead run {@link #save()} if
 	 *                        the provided {@code file} doesn't already exist
 	 */
 	protected AbstractConfig(Path file, boolean createIfMissing) {
