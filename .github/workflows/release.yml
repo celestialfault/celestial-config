@@ -24,7 +24,8 @@ jobs:
 
       - name: Publish to GitHub packages
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MAVEN_NAME: ${{ secrets.MAVEN_NAME }}
+          MAVEN_SECRET: ${{ secrets.MAVEN_SECRET }}
         run: |
           NEW_VERSION=$(echo "${GITHUB_REF}" | cut -d "/" -f3)
           echo "Publishing with version ${NEW_VERSION}"
