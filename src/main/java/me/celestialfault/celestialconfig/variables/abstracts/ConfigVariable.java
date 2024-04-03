@@ -18,7 +18,7 @@ public abstract class ConfigVariable<T> implements IConfigVariable<T> {
 	protected final String key;
 	/**
 	 * The current stored variable; you should avoid setting this directly outside the class constructor,
-	 * and instead use {@link #set(T)}.
+	 * and instead use {@link #set}.
 	 */
 	protected @Nullable T value = null;
 
