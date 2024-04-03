@@ -74,7 +74,7 @@ public class MapVariable<T> implements IConfigVariable<Map<String, T>>, Map<Stri
 
 	/**
 	 * Get the underlying {@link Map} that this variable mirrors; in most cases you shouldn't need to
-	 * make use of this method, as this {@link MapVariable<T>} will reflect all relevant map methods
+	 * make use of this method, as this {@link MapVariable} will reflect all relevant map methods
 	 * onto the underlying map.
 	 */
 	@Override

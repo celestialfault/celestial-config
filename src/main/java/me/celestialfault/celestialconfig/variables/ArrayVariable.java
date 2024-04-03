@@ -72,8 +72,8 @@ public class ArrayVariable<T> implements IConfigVariable<List<T>>, List<T> {
 	}
 
 	/**
-	 * Get the underlying {@link List<T>} that this variable mirrors; in most cases you shouldn't need to
-	 * make use of this method, as this {@link ArrayVariable<T>} will reflect all relevant list methods
+	 * Get the underlying {@link List} that this variable mirrors; in most cases you shouldn't need to
+	 * make use of this method, as this {@link ArrayVariable} will reflect all relevant list methods
 	 * onto the underlying list.
 	 */
 	@Override
