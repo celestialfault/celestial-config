@@ -5,13 +5,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonWriter;
-import me.celestialfault.celestialconfig.impl.VariableScanner;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
@@ -22,11 +18,6 @@ import java.util.Map;
  * <h2>Example usage:</h2>
  *
  * <pre>{@code
- * import me.celestialfault.celestialconfig.AbstractConfig;
- * import me.celestialfault.celestialconfig.variables.StringVariable;
- * import java.nio.file.Path;
- * import java.nio.file.Paths;
- *
  * public final class MyConfig extends AbstractConfig {
  *     public MyConfig() {
  *         // create a Path based on where your program is running
@@ -43,7 +34,7 @@ import java.util.Map;
  *     public final StringVariable string = new StringVariable("string_key", "Default value");
  * }
  *
- * // ... elsewhere:
+ * // elsewhere:
  *
  * MyConfig config = new MyConfig();
  * // load from disk
@@ -72,11 +63,22 @@ public abstract class AbstractConfig extends VariableScanner {
 	 */
 	protected final Map<String, JsonElement> unacceptedKeys = new HashMap<>();
 
+	/**
+	 * The path at which this configuration file will load and save its contents; this is set when calling
+	 * {@link #AbstractConfig(Path) super(Path)} or {@link #AbstractConfig(Path, boolean) super(Path, boolean)}.
+	 */
 	protected final Path path;
+	/**
+	 * If {@code true}, {@link #load()} will instead call {@link #save()} if the {@link #path configuration file}
+	 * doesn't exist already; this defaults to {@code true} if you don't turn this behavior off when
+	 * {@link #AbstractConfig(Path, boolean) calling super()}
+	 */
 	protected final boolean createIfMissing;
 
 	/**
 	 * Create a new {@link AbstractConfig} with a config file path
+	 *
+	 * @apiNote This constructor will implicitly set {@link #createIfMissing} to {@code true}
 	 *
 	 * @param file The path to where your config file should reside on disk
 	 */
@@ -99,8 +101,8 @@ public abstract class AbstractConfig extends VariableScanner {
 	}
 
 	/**
-	 * Load the configuration file saved on disk, or create a new one if it doesn't exist (and this
-	 * configuration class wasn't created with the relevant setting turned off).
+	 * Load the configuration file saved on disk into memory, or create a new one if it doesn't exist (and this
+	 * configuration class wasn't created with the {@link #createIfMissing relevant setting} turned off).
 	 */
 	public void load() throws IOException {
 		File configFile = path.toFile();
@@ -127,7 +129,7 @@ public abstract class AbstractConfig extends VariableScanner {
 	}
 
 	/**
-	 * Save all current configuration variables to the relevant file on disk
+	 * Save all variables to the configuration file on disk
 	 */
 	@SuppressWarnings("CodeBlock2Expr")
 	public void save() throws IOException {
@@ -138,7 +140,9 @@ public abstract class AbstractConfig extends VariableScanner {
 			getVariables().forEach((name, variable) -> {
 				variable.save().ifPresent(v -> object.add(name, v));
 			});
-			unacceptedKeys.forEach(object::add);
+			unacceptedKeys.entrySet().stream()
+				.filter(entry -> !object.has(entry.getKey()))
+				.forEach(entry -> object.add(entry.getKey(), entry.getValue()));
 			ADAPTER.write(jsonWriter, object);
 		}
 	}

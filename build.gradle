@@ -1,23 +1,24 @@
 plugins {
-    id 'java'
+	id 'java'
 	id("maven-publish")
 }
 
 group = 'me.celestialfault'
 
 repositories {
-    mavenCentral()
+	mavenCentral()
 }
 
 dependencies {
-    implementation 'org.jetbrains:annotations:24.0.0'
-    implementation 'com.google.code.gson:gson:2.10.1'
+	implementation 'org.jetbrains:annotations:24.0.0'
+	implementation 'com.google.code.gson:gson:2.10.1'
 }
 
 java {
-    targetCompatibility = 8
+	targetCompatibility = 8
 	sourceCompatibility = 8
-    withSourcesJar()
+	withSourcesJar()
+	withJavadocJar()
 }
 
 publishing {
@@ -36,4 +37,12 @@ publishing {
 			from(components.java)
 		}
 	}
+}
+
+tasks.withType(Javadoc).configureEach {
+	options.tags = [
+		'apiNote:a:<em>API Note:</em>',
+		'implSpec:a:<em>Implementation Requirements:</em>',
+		'implNote:a:<em>Implementation Note:</em>'
+	]
 }

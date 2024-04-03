@@ -3,15 +3,17 @@ package me.celestialfault.celestialconfig.variables;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import me.celestialfault.celestialconfig.json.Deserializer;
 import me.celestialfault.celestialconfig.IConfigVariable;
+import me.celestialfault.celestialconfig.json.Serializer;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
 /**
- * <p>A {@link List} variable containing elements of one type.</p>
+ * <p>Variable storing a {@link List} with elements of one type</p>
  *
- * <p>The underlying {@link ArrayList} may be accessed with {@link #get()}, but this class may also be used directly
+ * <p>The underlying {@link List} may be accessed with {@link #get()}, but this class may also be used directly
  * as a {@link List}.</p>
  *
  * <h2>Example usage:</h2>
@@ -29,6 +31,8 @@ import java.util.*;
  * config.ints.get(0); // -> 6
  * config.save();
  * }</pre>
+ *
+ * @param <T> The type of this list's contents
  */
 public class ArrayVariable<T> implements IConfigVariable<List<T>>, List<T> {
 	private final String key;
@@ -36,11 +40,26 @@ public class ArrayVariable<T> implements IConfigVariable<List<T>>, List<T> {
 	private final Serializer<T> serializer;
 	private final Deserializer<T> deserializer;
 
+	/**
+	 * Create a new array variable with a default list of values
+	 *
+	 * @param key           The key this variable is stored as in configuration files
+	 * @param defaultValues The default values to load into the created variable
+	 * @param serializer    The serialization method for contained values used when saving this variable to disk
+	 * @param deserializer  The deserialization method for contained values used when loading this variable from disk
+	 */
 	public ArrayVariable(String key, List<T> defaultValues, Serializer<T> serializer, Deserializer<T> deserializer) {
 		this(key, serializer, deserializer);
 		this.list.addAll(defaultValues);
 	}
 
+	/**
+	 * Create a new empty array variable
+	 *
+	 * @param key          The key this variable is stored as in configuration files
+	 * @param serializer   The serialization method for contained values used when saving this variable to disk
+	 * @param deserializer The deserialization method for contained values used when loading this variable from disk
+	 */
 	public ArrayVariable(String key, Serializer<T> serializer, Deserializer<T> deserializer) {
 		this.key = key;
 		this.serializer = serializer;
@@ -52,6 +71,11 @@ public class ArrayVariable<T> implements IConfigVariable<List<T>>, List<T> {
 		return key;
 	}
 
+	/**
+	 * Get the underlying {@link List<T>} that this variable mirrors; in most cases you shouldn't need to
+	 * make use of this method, as this {@link ArrayVariable<T>} will reflect all relevant list methods
+	 * onto the underlying list.
+	 */
 	@Override
 	public @NotNull List<T> get() {
 		return this.list;
@@ -207,15 +231,5 @@ public class ArrayVariable<T> implements IConfigVariable<List<T>>, List<T> {
 	@Override
 	public List<T> subList(int i, int i1) {
 		return list.subList(i, i1);
-	}
-
-	@FunctionalInterface
-	public interface Serializer<T> {
-		JsonElement serialize(T value);
-	}
-
-	@FunctionalInterface
-	public interface Deserializer<T> {
-		T deserialize(JsonElement element);
 	}
 }

@@ -8,6 +8,7 @@ import java.util.List;
 
 public class ExampleConfig extends AbstractConfig {
 	protected ExampleConfig() {
+		// loads and saves to config.json in the current directory
 		super(Paths.get("").toAbsolutePath().resolve("config.json"));
 	}
 
@@ -19,8 +20,9 @@ public class ExampleConfig extends AbstractConfig {
 	public final ArrayVariable<Integer> array = new ArrayVariable<>("array", List.of(6), JsonPrimitive::new, JsonElement::getAsInt);
 	public final ExampleMap map = new ExampleMap();
 
+	// note that you don't access this map from this subclass, but from the `map` field above!
 	public static class ExampleMap extends VariableMap {
-		public ExampleMap() {
+		private ExampleMap() {
 			super("map");
 		}
 

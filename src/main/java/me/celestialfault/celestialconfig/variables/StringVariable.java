@@ -5,7 +5,16 @@ import me.celestialfault.celestialconfig.variables.abstracts.PrimitiveVariable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * Variable storing a string value
+ */
 public class StringVariable extends PrimitiveVariable<String> {
+	/**
+	 * Create a new {@link String} variable
+	 *
+	 * @param key          The key this variable is stored as in configuration files
+	 * @param defaultValue The default value returned if none is set
+	 */
 	public StringVariable(String key, @Nullable String defaultValue) {
 		super(key, defaultValue);
 	}
