@@ -126,7 +126,7 @@ interface Property<T> {
 		 * ```
 		 */
 		@JvmStatic fun <T : Enum<*>> enum(key: String, enumClass: Class<T>, default: T? = null): EnumProperty<T> =
-			EnumProperty(key = key, enumClass = enumClass, default = default)
+			EnumProperty(key, default, enumClass)
 
 		/**
 		 * Create a new [Enum] [Property] type
@@ -144,7 +144,7 @@ interface Property<T> {
 		 * Create a new [MutableMap] [Property] type
 		 */
 		@JvmStatic fun <T> map(key: String, serializer: Serializer<T>, defaults: Map<String, T>? = null): MapProperty<T> =
-			MapProperty(key, serializer, defaults = defaults)
+			MapProperty(key, serializer, defaults)
 
 		/**
 		 * Create a new [MutableMap] [Property] type, using a built-in serializer from [Serializer]
@@ -156,13 +156,13 @@ interface Property<T> {
 		 * ```
 		 */
 		inline fun <reified T> map(key: String, defaults: Map<String, T>? = null): MapProperty<T> =
-			MapProperty(key = key, serializer = Serializer.findSerializer<T>(), defaults = defaults)
+			MapProperty(key, Serializer.findSerializer<T>(), defaults)
 
 		/**
 		 * Create a new [MutableList] [Property] type
 		 */
 		@JvmStatic fun <T> list(key: String, serializer: Serializer<T>, defaults: List<T>? = null): ListProperty<T> =
-			ListProperty(key, serializer, defaults = defaults)
+			ListProperty(key, serializer, defaults)
 
 		/**
 		 * Create a new [MutableList] [Property] type, using a built-in serializer from [Serializer]
@@ -174,24 +174,49 @@ interface Property<T> {
 		 * ```
 		 */
 		inline fun <reified T> list(key: String, defaults: List<T>? = null): ListProperty<T> =
-			ListProperty(key = key, serializer = Serializer.findSerializer<T>(), defaults = defaults)
+			ListProperty(key, Serializer.findSerializer<T>(), defaults)
 	}
 }
 
 /**
- * Basic property type for values that can be stored with a [JsonPrimitive]
+ * Basic property type for values that don't require special handling to store, such as [Int] and [String]
  */
-abstract class PrimitiveProperty<T>(override val key: String, default: T?) : Property<T> {
+abstract class PrimitiveProperty<T> protected constructor(override val key: String, val default: T?) : Property<T> {
 	protected open var value: T? = default
 
+	/**
+	 * Get the current stored value in this property
+	 */
 	open fun get(): T? = this.value
+
+	/**
+	 * Set the value to be stored in this property
+	 */
 	open fun set(value: T?) {
 		this.value = value
 	}
 
-	protected abstract fun toPrimitive(value: T): JsonPrimitive?
-	protected abstract fun isValid(primitive: JsonPrimitive): Boolean
-	protected abstract fun fromPrimitive(primitive: JsonPrimitive): T?
+	/**
+	 * A utility method combining both [get] and [set]
+	 */
+	open fun getAndUpdate(update: (T?) -> T?) = set(update.invoke(get()))
+
+	/**
+	 * Encode the provided [value] in a [JsonElement] to be stored on disk
+	 */
+	abstract fun toPrimitive(value: T): JsonPrimitive?
+
+	/**
+	 * Check if the provided [primitive] is valid for this property
+	 *
+	 * If this returns `false`, the primitive is ignored entirely.
+	 */
+	abstract fun isValid(primitive: JsonPrimitive): Boolean
+
+	/**
+	 * Load the provided [primitive] into a value able to be stored
+	 */
+	abstract fun fromPrimitive(primitive: JsonPrimitive): T?
 
 	override fun save(): JsonElement? = value?.let { toPrimitive(it) } ?: JsonNull.INSTANCE
 	override fun load(element: JsonElement) {
@@ -204,7 +229,12 @@ abstract class PrimitiveProperty<T>(override val key: String, default: T?) : Pro
 		}
 	}
 
+	/**
+	 * Wrap the current [PrimitiveProperty] in a [NoNullProperty], enforcing that the stored value cannot be null
+	 */
+	fun notNullable() = NoNullProperty(this)
+
 	override fun toString(): String {
-		return "$key=${save()}"
+		return "${save()}"
 	}
 }

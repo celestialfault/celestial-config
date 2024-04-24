@@ -2,7 +2,6 @@ import org.jetbrains.dokka.gradle.DokkaTask
 import java.net.URL
 
 plugins {
-	idea
 	java
 	id("maven-publish")
 	kotlin("jvm") version "1.9.23"
@@ -26,14 +25,23 @@ java {
 	withSourcesJar()
 }
 
+val javadocJar by tasks.registering(Jar::class) {
+	archiveClassifier.set("javadoc")
+	from(tasks.dokkaJavadoc)
+}
+
 publishing {
 	repositories {
 		maven {
 			name = "celestialfault"
-			url = uri("https://maven.odinair.xyz/releases")
+			url = uri("https://maven.odinair.xyz/snapshots")
 			credentials {
-				username = (project.findProperty("maven.username") ?: System.getenv("MAVEN_NAME")) as String
-				password = (project.findProperty("maven.secret") ?: System.getenv("MAVEN_SECRET")) as String
+				username = if(project.hasProperty("maven.username"))
+					project.findProperty("maven.username") as String
+					else System.getenv("MAVEN_NAME").ifEmpty { null }
+				password = if(project.hasProperty("maven.secret"))
+					project.findProperty("maven.secret") as String
+					else System.getenv("MAVEN_SECRET").ifEmpty { null }
 			}
 		}
 	}
@@ -41,6 +49,7 @@ publishing {
 	publications {
 		create<MavenPublication>("celestial-config") {
 			from(components["java"])
+			artifact(javadocJar)
 		}
 	}
 }

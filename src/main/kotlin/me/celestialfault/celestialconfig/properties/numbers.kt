@@ -6,7 +6,7 @@ import me.celestialfault.celestialconfig.PrimitiveProperty
 /**
  * Basic property type for all [Number]-based values, such as integers
  */
-abstract class NumberProperty<T : Number>(
+abstract class NumberProperty<T : Number> protected constructor(
 	key: String, default: T?,
 	val min: Comparable<T>? = null,
 	val max: Comparable<T>? = null,
@@ -18,6 +18,12 @@ abstract class NumberProperty<T : Number>(
 			return
 		}
 		super.set(value)
+	}
+
+	override fun getAndUpdate(update: (T?) -> T?) {
+		val value = update.invoke(get())
+		if(value != null && !validate(value)) return
+		set(value)
 	}
 
 	open fun validate(value: T): Boolean =

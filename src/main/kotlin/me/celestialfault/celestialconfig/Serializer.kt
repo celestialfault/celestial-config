@@ -1,12 +1,9 @@
 package me.celestialfault.celestialconfig
 
-import com.google.gson.JsonArray
-import com.google.gson.JsonElement
-import com.google.gson.JsonObject
-import com.google.gson.JsonPrimitive
+import com.google.gson.*
 import me.celestialfault.celestialconfig.properties.ListProperty
 import me.celestialfault.celestialconfig.properties.MapProperty
-import me.celestialfault.celestialconfig.properties.SubclassProperty
+import me.celestialfault.celestialconfig.properties.ObjectProperty
 import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
@@ -30,6 +27,8 @@ interface Serializer<T> {
 	 * Built-in serialization helpers for common types
 	 */
 	companion object {
+		@JvmStatic val defaultGson: Gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+
 		/**
 		* [Int] serializer
 		*/
@@ -102,19 +101,51 @@ interface Serializer<T> {
 		inline fun <reified T : Enum<*>> enum() = enum(T::class.java)
 
 		/**
-		 * [SubclassProperty] serializer using a Java class
+		 * [ObjectProperty] serializer using a Java class
+		 * 
+		 * Note that the provided [ObjectProperty] class **must** have a constructor accepting a single
+		 * [JsonObject] parameter.
+		 *
+		 * ## Kotlin Example
+		 * 
+		 * ```
+		 * class UserData() : ObjectProperty<UserData>("") {
+		 *     constructor(data: JsonObject) {
+		 *         load(data)
+		 *     }
+		 *     
+		 *     // place your variables here as normal
+		 * }
+		 * 
+		 * val users = Property.list("users", Serializer.obj<UserData>())
+		 * ```
+		 *
+		 * ## Java Example
+		 *
+		 * ```java
+		 * public static class UserData extends ObjectProperty<UserData> {
+		 *     public UserData(JsonObject obj) {
+		 *         super("");
+		 *         load(obj);
+		 *     }
+		 *
+		 *     // place your variables here as normal
+		 * }
+		 *
+		 * public final ListProperty<UserData> users = Property.list("users", Serializer.obj(UserData::class));
+		 * ```
 		 */
-		@JvmStatic fun <T : SubclassProperty<T>> subclass(subclass: Class<T>) = object : Serializer<T> {
+		@JvmStatic fun <T : ObjectProperty<T>> obj(obj: Class<T>) = object : Serializer<T> {
 			override fun serialize(value: T): JsonElement = value.save()
 			override fun deserialize(element: JsonElement): T? = if(element is JsonObject) {
-				subclass.getConstructor(JsonObject::class.java).newInstance(element)
+				obj.getConstructor(JsonObject::class.java).newInstance(element)
 			} else null
 		}
 
 		/**
-		 * [SubclassProperty] serializer using Kotlin `reified` syntax
+		 * [ObjectProperty] serializer using Kotlin `reified` syntax
 		 */
-		inline fun <reified T : SubclassProperty<T>> subclass() = subclass(T::class.java)
+		inline fun <reified T : ObjectProperty<T>> obj() = obj(T::class.java)
 
 		/**
 		 * [MutableMap] serializer using a second serializer for contained values
@@ -167,7 +198,30 @@ interface Serializer<T> {
 		inline fun <reified T> list() = list(findSerializer<T>())
 
 		/**
+		 * Serializer using GSON `@Expose` annotations on an arbitrary class type, such as a `data class` or `record`
+		 *
+		 * Note that the default [Gson] instance will only (de)serialize fields marked with `@Expose`;
+		 * you should provide your own [Gson] instance if you want behavior differently to this.
+		 */
+		@JvmOverloads
+		@JvmStatic fun <T> expose(type: Class<T>, gson: Gson = defaultGson) = object : Serializer<T> {
+			override fun serialize(value: T): JsonElement? = gson.toJsonTree(value)
+			override fun deserialize(element: JsonElement): T? = gson.fromJson(element, type)
+		}
+
+		/**
+		 * GSON `@Expose` serializer using Kotlin `reified` syntax
+		 *
+		 * Note that the default [Gson] instance will only (de)serialize fields marked with `@Expose`;
+		 * you should provide your own [Gson] instance if you want behavior differently to this.
+		 */
+		inline fun <reified T> expose(gson: Gson = defaultGson) = expose(T::class.java, gson = gson)
+
+		/**
 		 * Find a [Serializer] providing type [T]
+		 *
+		 * Note that this will only find simple serializer types which can be represented in a `val` field
+		 * (such as [int] and [string]), and not ones that require use of a function (such as [enum] and [map]).
 		 *
 		 * @throws NoSuchElementException if no such built-in serializer exists
 		 */

@@ -1,14 +1,12 @@
 package me.celestialfault.celestialconfig
 
-import me.celestialfault.celestialconfig.properties.SubclassProperty
+import me.celestialfault.celestialconfig.properties.ObjectProperty
 import org.jetbrains.annotations.ApiStatus.Internal
+import org.jetbrains.annotations.Unmodifiable
 import java.lang.reflect.Modifier
-import kotlin.reflect.KMutableProperty
+import java.util.*
 import kotlin.reflect.KVisibility
-import kotlin.reflect.full.isSubclassOf
-import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.memberProperties
-import kotlin.reflect.full.starProjectedType
+import kotlin.reflect.full.*
 import kotlin.reflect.jvm.javaField
 
 /**
@@ -16,33 +14,29 @@ import kotlin.reflect.jvm.javaField
  */
 @Internal
 abstract class VariableLookup protected constructor() {
-	private var internalVariables: Map<String, Property<*>>? = null
-	val variables: Map<String, Property<*>>
-		get() = internalVariables ?: findVariables()
+	val variables: @Unmodifiable Map<String, Property<*>> by lazy {
+		mutableMapOf<String, Property<*>>().apply {
+			this@VariableLookup::class.memberProperties
+				.asSequence()
+				.filter { it.visibility == KVisibility.PUBLIC }
+				.filter { it.returnType.isSubtypeOf(Property::class.starProjectedType) }
+				.onEach { require(it.javaField != null) { "Property fields cannot make use of get() syntax" } }
+				.filter { it.javaField!!.let { field -> Modifier.isFinal(field.modifiers) } }
+				.map { it.getter.call(this@VariableLookup) as Property<*> }
+				.onEach { require(it.key !in this) { "Duplicate key ${it.key}" } }
+				.onEach { require(it.key.isNotEmpty()) { "Property key cannot be an empty string" } }
+				.forEach { this[it.key] = it }
 
-	private fun findVariables(): Map<String, Property<*>> {
-		val vars = this::class.memberProperties
-			.asSequence()
-			// Require that the field is public
-			.filter { it.visibility == KVisibility.PUBLIC }
-			// And that its final
-			.filter { it.javaField?.let { field -> Modifier.isFinal(field.modifiers) } ?: (it !is KMutableProperty<*>) }
-			// And that the field type is a Property implementation
-			.filter { it.returnType.isSubtypeOf(Property::class.starProjectedType) }
-			// Retrieve the property from the field, and store it in a map
-			.map { it.getter.call(this) as Property<*> }
-			.associateBy { it.key }
-			.toMutableMap()
-
-		// Explicitly look for any kotlin object types
-		this::class.nestedClasses
-			.filter { it.visibility == KVisibility.PUBLIC }
-			.filter { it.objectInstance != null }
-			.filter { it.isSubclassOf(SubclassProperty::class) }
-			.map { it.objectInstance as SubclassProperty<*> }
-			.forEach { vars[it.key] = it }
-
-		this.internalVariables = vars
-		return vars
+			// Explicitly look for any kotlin object types
+			this@VariableLookup::class.nestedClasses
+				.asSequence()
+				.filter { it.visibility == KVisibility.PUBLIC }
+				.filter { it.objectInstance != null }
+				.filter { it.isSubclassOf(ObjectProperty::class) }
+				.map { it.objectInstance as ObjectProperty<*> }
+				.onEach { require(it.key !in this) { "Duplicate key ${it.key}" } }
+				.onEach { require(it.key.isNotEmpty()) { "Object key cannot be an empty string" } }
+				.forEach { this[it.key] = it }
+		}.let { Collections.unmodifiableMap(it) }
 	}
 }

@@ -1,0 +1,2 @@
+- better support nullability? unsure how best to approach this with the current design
+  - could just leave it as is tbh lol

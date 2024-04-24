@@ -1,8 +1,5 @@
 import com.google.gson.JsonObject
-import me.celestialfault.celestialconfig.AbstractConfig
-import me.celestialfault.celestialconfig.Property
-import me.celestialfault.celestialconfig.properties.SubclassProperty
-import me.celestialfault.celestialconfig.Serializer
+import me.celestialfault.celestialconfig.properties.ObjectProperty
 import java.nio.file.Paths
 import kotlin.random.Random
 
@@ -18,19 +15,19 @@ object Config : AbstractConfig(Paths.get(".", "config.json")) {
 	val list = Property.list<Int>("intList")
 	val enum = Property.enum<UserType>("type", default = UserType.GUEST)
 
-	val arrayOfObjects = Property.list("objects", Serializer.subclass<ArrayObject>())
+	val arrayOfObjects = Property.list("objects", Serializer.obj<ArrayObject>())
 	val nestedIntList = Property.list("nestedList", Serializer.list<Int>())
 
 	// note the use of 'object'!
 	// in pure java you'll have to create an instance with `public final Inner inner = new Inner();`
-	object Inner : SubclassProperty<Inner>("inner") {
+	object Inner : ObjectProperty<Inner>("inner") {
 		// access with Config.Inner.string
 		val string = Property.string("string", default = "abc123")
 	}
 
 	// this is a 'class' as opposed to the above object to allow for usage in #arrayOfObjects
 	// an empty key string for this example use case is acceptable as a list has no concept of keys
-	class ArrayObject() : SubclassProperty<ArrayObject>("") {
+	class ArrayObject() : ObjectProperty<ArrayObject>("") {
 		constructor(obj: JsonObject) : this() {
 			load(obj)
 		}
@@ -47,6 +44,6 @@ fun main() {
 		a.set("hello")
 	})
 	Config.nestedIntList.add(mutableListOf(1))
-	Config.variables.values.forEach(::println)
+	Config.variables.forEach(::println)
 	Config.save()
 }

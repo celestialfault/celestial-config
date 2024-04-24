@@ -9,6 +9,7 @@ import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
 import java.nio.file.Path
+import kotlin.io.path.createParentDirectories
 
 /**
  * Simple wrapper around GSON for loading configuration files.
@@ -25,7 +26,7 @@ import java.nio.file.Path
  * object MyConfig : AbstractConfig(path) {
  *     val intKey = Property.int(key = "int", default = 0)
  *
- *     object UserData : SubclassProperty<UserData>("user_data") {
+ *     object UserData : ObjectProperty<UserData>("user_data") {
  *         val enumKey = Property.enum<UserType>("type", default = UserType.USER)
  *     }
  * }
@@ -39,6 +40,7 @@ import java.nio.file.Path
  * }
  * ```
  */
+@Suppress("MemberVisibilityCanBePrivate")
 abstract class AbstractConfig protected constructor(
 	/**
 	 * The path at which this configuration file will load and save its contents
@@ -60,7 +62,7 @@ abstract class AbstractConfig protected constructor(
 	/**
 	 * A store of keys which were not accepted by any variables when loading the configuration file from disk
 	 */
-	protected val unacceptedKeys: MutableMap<String, JsonElement> = HashMap()
+	protected val unacceptedKeys: MutableMap<String, JsonElement> = mutableMapOf()
 
 	/**
 	 * Create a new [AbstractConfig] with a config file path
@@ -72,8 +74,8 @@ abstract class AbstractConfig protected constructor(
 	protected constructor(path: Path) : this(path, true)
 
 	/**
-	 * Load the configuration file saved on disk into memory, or create a new one if it doesn't exist (and this
-	 * configuration class wasn't created with the [relevant setting][.createIfMissing] turned off).
+	 * Load the configuration file saved on disk into memory, or create a new one if it doesn't exist (and [createIfMissing]
+	 * was not set to `false`)
 	 */
 	@Throws(IOException::class)
 	fun load() {
@@ -101,6 +103,7 @@ abstract class AbstractConfig protected constructor(
 	@Throws(IOException::class)
 	fun save() {
 		val configFile = path.toFile()
+		path.toAbsolutePath().createParentDirectories()
 		FileWriter(configFile).use { writer ->
 			JsonWriter(writer).use { jsonWriter ->
 				jsonWriter.setIndent(indent)

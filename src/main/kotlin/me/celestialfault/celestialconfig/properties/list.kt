@@ -5,7 +5,7 @@ import com.google.gson.JsonElement
 import me.celestialfault.celestialconfig.Property
 import me.celestialfault.celestialconfig.Serializer
 
-class ListProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableList<T>, Property<Map<String, T>> {
+class ListProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableList<T>, Property<MutableList<T>> {
 	private val list: MutableList<T> = mutableListOf()
 
 	constructor(key: String, serializer: Serializer<T>, defaults: List<T>?) : this(key, serializer) {
@@ -50,6 +50,6 @@ class ListProperty<T>(override val key: String, private val serializer: Serializ
 	}
 
 	override fun toString(): String {
-		return "$key=${save()}"
+		return "${save()}"
 	}
 }

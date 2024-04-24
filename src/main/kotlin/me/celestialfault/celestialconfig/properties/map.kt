@@ -5,7 +5,7 @@ import com.google.gson.JsonObject
 import me.celestialfault.celestialconfig.Property
 import me.celestialfault.celestialconfig.Serializer
 
-class MapProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableMap<String, T>, Property<Map<String, T>> {
+class MapProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableMap<String, T>, Property<MutableMap<String, T>> {
 	private val map: MutableMap<String, T> = mutableMapOf()
 
 	constructor(key: String, serializer: Serializer<T>, defaults: Map<String, T>?) : this(key, serializer) {
@@ -45,6 +45,6 @@ class MapProperty<T>(override val key: String, private val serializer: Serialize
 	}
 
 	override fun toString(): String {
-		return "$key=${save()}"
+		return "${save()}"
 	}
 }

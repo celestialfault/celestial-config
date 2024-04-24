@@ -6,13 +6,13 @@ import me.celestialfault.celestialconfig.Property
 import me.celestialfault.celestialconfig.VariableLookup
 
 /**
- * [Property] type used to store variables in a subclass, such as an `object`
+ * [Property] superclass type used to store variables in a JSON object with differing types
  *
  * ## Example usage:
  *
  * ```
  * object Config : AbstractConfig(...) {
- *     object Inner : SubclassProperty<Inner>("inner") {
+ *     object Inner : ObjectProperty<Inner>("inner") {
  *         val innerValue = Property.string("value", default = "Hello world!")
  *     }
  * }
@@ -25,7 +25,10 @@ import me.celestialfault.celestialconfig.VariableLookup
  * }
  * ```
  */
-open class SubclassProperty<T>(override val key: String) : Property<T>, VariableLookup() {
+open class ObjectProperty<T>(override val key: String) : Property<T>, VariableLookup() {
+	/**
+	 * @see me.celestialfault.celestialconfig.AbstractConfig.unacceptedKeys
+	 */
 	protected val unacceptedKeys: MutableMap<String, JsonElement> = mutableMapOf()
 
 	override fun save(): JsonElement =
@@ -44,6 +47,6 @@ open class SubclassProperty<T>(override val key: String) : Property<T>, Variable
 	}
 
 	override fun toString(): String {
-		return "$key=${save()}"
+		return "${save()}"
 	}
 }
