@@ -36,12 +36,8 @@ publishing {
 			name = "celestialfault"
 			url = uri("https://maven.odinair.xyz/snapshots")
 			credentials {
-				username = if(project.hasProperty("maven.username"))
-					project.findProperty("maven.username") as String
-					else System.getenv("MAVEN_NAME").ifEmpty { null }
-				password = if(project.hasProperty("maven.secret"))
-					project.findProperty("maven.secret") as String
-					else System.getenv("MAVEN_SECRET").ifEmpty { null }
+				username = project.findProperty("maven.username") as String? ?: System.getenv("MAVEN_NAME")
+				password = project.findProperty("maven.secret") as String? ?: System.getenv("MAVEN_SECRET")
 			}
 		}
 	}
