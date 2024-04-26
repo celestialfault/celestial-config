@@ -6,6 +6,8 @@ A utility library on top of GSON for use with configuration files; this abstract
 saving of JSON files for you, so all you need to worry about is what variables you need to save,
 and in what manner.
 
+This project is primarily designed for use in Kotlin, but does support use in pure Java (albeit at a lower priority).
+
 ## Usage
 
 Add this as a dependency in your build configuration from [my Maven repository](https://maven.odinair.xyz/);

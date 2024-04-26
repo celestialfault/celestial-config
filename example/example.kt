@@ -10,19 +10,19 @@ enum class UserType {
 object Config : AbstractConfig(Paths.get(".", "config.json")) {
 	// property fields must be both public and final (or simply 'val' in kotlin)
 	// note that use of 'get() =' is not supported due to how properties are loaded
-	val int = Property.int("int", default = 4)
-	val map = Property.map<Int>("intMap")
-	val list = Property.list<Int>("intList")
-	val enum = Property.enum<UserType>("type", default = UserType.GUEST)
+	var int by Property.int("int", default = 4)
+	val map by Property.map<Int>("intMap")
+	val list by Property.list<Int>("intList")
+	var enum by Property.enum<UserType>("type", default = UserType.GUEST)
 
-	val arrayOfObjects = Property.list("objects", Serializer.obj<ArrayObject>())
-	val nestedIntList = Property.list("nestedList", Serializer.list<Int>())
+	val arrayOfObjects by Property.list("objects", Serializer.obj<ArrayObject>())
+	val nestedIntList by Property.list("nestedList", Serializer.list<Int>())
 
 	// note the use of 'object'!
 	// in pure java you'll have to create an instance with `public final Inner inner = new Inner();`
 	object Inner : ObjectProperty<Inner>("inner") {
 		// access with Config.Inner.string
-		val string = Property.string("string", default = "abc123")
+		var string by Property.string("string", default = "abc123")
 	}
 
 	// this is a 'class' as opposed to the above object to allow for usage in #arrayOfObjects
@@ -41,7 +41,7 @@ fun main() {
 	Config.load()
 	Config.map["v${Config.map.size}"] = Random.nextInt()
 	Config.arrayOfObjects.add(Config.ArrayObject().apply {
-		a.set("hello")
+		a = "hello"
 	})
 	Config.nestedIntList.add(mutableListOf(1))
 	Config.variables.forEach(::println)

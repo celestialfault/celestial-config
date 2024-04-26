@@ -4,6 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
 import me.celestialfault.celestialconfig.PrimitiveProperty
 import me.celestialfault.celestialconfig.Property
+import kotlin.reflect.KProperty
 
 /**
  * Wrapper around [PrimitiveProperty], enforcing that the stored value cannot be null
@@ -43,4 +44,7 @@ class NoNullProperty<T> internal constructor(val wrapped: PrimitiveProperty<T>) 
 	fun getAndUpdate(update: (T) -> T) = set(update.invoke(get()))
 
 	override fun toString(): String = "${save()}"
+
+	operator fun getValue(config: Any, property: KProperty<*>): T = get()
+	operator fun setValue(config: Any, property: KProperty<*>, value: T) = set(value)
 }

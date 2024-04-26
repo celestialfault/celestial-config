@@ -102,12 +102,17 @@ interface Serializer<T> {
 
 		/**
 		 * [ObjectProperty] serializer using a Java class
-		 * 
+		 *
 		 * Note that the provided [ObjectProperty] class **must** have a constructor accepting a single
 		 * [JsonObject] parameter.
 		 *
+		 * In a Kotlin class, this constructor **must** either be:
+		 *
+		 * - Your primary constructor, **with no additional constructors**, using the `init` block to call `load()`; OR
+		 * - A separate constructor on its own (as shown below)
+		 *
 		 * ## Kotlin Example
-		 * 
+		 *
 		 * ```
 		 * class UserData() : ObjectProperty<UserData>("") {
 		 *     constructor(data: JsonObject) {
@@ -116,7 +121,7 @@ interface Serializer<T> {
 		 *     
 		 *     // place your variables here as normal
 		 * }
-		 * 
+		 *
 		 * val users = Property.list("users", Serializer.obj<UserData>())
 		 * ```
 		 *
@@ -124,8 +129,12 @@ interface Serializer<T> {
 		 *
 		 * ```java
 		 * public static class UserData extends ObjectProperty<UserData> {
-		 *     public UserData(JsonObject obj) {
+		 *     public UserData() {
 		 *         super("");
+		 *     }
+		 *
+		 *     public UserData(JsonObject obj) {
+		 *         this();
 		 *         load(obj);
 		 *     }
 		 *
@@ -202,6 +211,8 @@ interface Serializer<T> {
 		 *
 		 * Note that the default [Gson] instance will only (de)serialize fields marked with `@Expose`;
 		 * you should provide your own [Gson] instance if you want behavior differently to this.
+		 *
+		 * The provided class **must** have a constructor with no arguments.
 		 */
 		@JvmOverloads
 		@JvmStatic fun <T> expose(type: Class<T>, gson: Gson = defaultGson) = object : Serializer<T> {

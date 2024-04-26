@@ -4,6 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import me.celestialfault.celestialconfig.Property
 import me.celestialfault.celestialconfig.Serializer
+import kotlin.reflect.KProperty
 
 class MapProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableMap<String, T>, Property<MutableMap<String, T>> {
 	private val map: MutableMap<String, T> = mutableMapOf()
@@ -47,4 +48,6 @@ class MapProperty<T>(override val key: String, private val serializer: Serialize
 	override fun toString(): String {
 		return "${save()}"
 	}
+
+	operator fun getValue(config: Any, prop: KProperty<*>): MutableMap<String, T> = map
 }

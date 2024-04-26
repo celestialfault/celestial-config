@@ -5,8 +5,10 @@ import org.jetbrains.annotations.ApiStatus.Internal
 import org.jetbrains.annotations.Unmodifiable
 import java.lang.reflect.Modifier
 import java.util.*
+import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
 import kotlin.reflect.full.*
+import kotlin.reflect.jvm.isAccessible
 import kotlin.reflect.jvm.javaField
 
 /**
@@ -15,28 +17,48 @@ import kotlin.reflect.jvm.javaField
 @Internal
 abstract class VariableLookup protected constructor() {
 	val variables: @Unmodifiable Map<String, Property<*>> by lazy {
-		mutableMapOf<String, Property<*>>().apply {
-			this@VariableLookup::class.memberProperties
-				.asSequence()
-				.filter { it.visibility == KVisibility.PUBLIC }
-				.filter { it.returnType.isSubtypeOf(Property::class.starProjectedType) }
-				.onEach { require(it.javaField != null) { "Property fields cannot make use of get() syntax" } }
-				.filter { it.javaField!!.let { field -> Modifier.isFinal(field.modifiers) } }
-				.map { it.getter.call(this@VariableLookup) as Property<*> }
-				.onEach { require(it.key !in this) { "Duplicate key ${it.key}" } }
-				.onEach { require(it.key.isNotEmpty()) { "Property key cannot be an empty string" } }
-				.forEach { this[it.key] = it }
+		val map = mutableMapOf<String, Property<*>>()
 
-			// Explicitly look for any kotlin object types
-			this@VariableLookup::class.nestedClasses
-				.asSequence()
-				.filter { it.visibility == KVisibility.PUBLIC }
-				.filter { it.objectInstance != null }
-				.filter { it.isSubclassOf(ObjectProperty::class) }
-				.map { it.objectInstance as ObjectProperty<*> }
-				.onEach { require(it.key !in this) { "Duplicate key ${it.key}" } }
-				.onEach { require(it.key.isNotEmpty()) { "Object key cannot be an empty string" } }
-				.forEach { this[it.key] = it }
-		}.let { Collections.unmodifiableMap(it) }
+		map.putAll(actualVariables)
+		map.putAll(delegated)
+		map.putAll(objects)
+
+		Collections.unmodifiableMap(map)
 	}
+
+	private val actualVariables by lazy {
+		this@VariableLookup::class.memberProperties
+			.asSequence()
+			.filter { it.returnType.isSubtypeOf(Property::class.starProjectedType) }
+			.onEach { check(it.javaField != null) { "Property fields cannot make use of get() syntax" } }
+			.onEach { check(Modifier.isFinal(it.javaField!!.modifiers)) { "Property field must be final" } }
+			.map { it.getter.call(this@VariableLookup) as Property<*> }
+			.onEach { require(it.key.isNotEmpty()) { "Property key cannot be an empty string" } }
+			.associateBy { it.key }
+	}
+
+	private val delegated by lazy {
+		this@VariableLookup::class.memberProperties
+			.asSequence()
+			.map { getDelegate(it, this) }
+			.filterNotNull()
+			.associateBy { it.key }
+	}
+
+	private val objects by lazy {
+		this@VariableLookup::class.nestedClasses
+			.asSequence()
+			.filter { it.visibility == KVisibility.PUBLIC }
+			.filter { it.objectInstance != null }
+			.filter { it.isSubclassOf(ObjectProperty::class) }
+			.map { it.objectInstance as ObjectProperty<*> }
+			.onEach { require(it.key.isNotEmpty()) { "Object key cannot be an empty string" } }
+			.associateBy { it.key }
+	}
+
+	@Suppress("UNCHECKED_CAST")
+	private fun getDelegate(prop: KProperty1<out VariableLookup, *>, it: Any): Property<*>? =
+		// delegates are weird
+		(prop as KProperty1<Any, *>).apply { isAccessible = true }.getDelegate(it)
+			.takeIf { it is Property<*> } as Property<*>?
 }

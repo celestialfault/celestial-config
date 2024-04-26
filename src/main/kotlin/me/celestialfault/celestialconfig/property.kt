@@ -4,6 +4,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.google.gson.JsonPrimitive
 import me.celestialfault.celestialconfig.properties.*
+import kotlin.reflect.KProperty
 
 /**
  * Basic property type, supporting the bare minimum needed to load and save to/from disk
@@ -237,4 +238,9 @@ abstract class PrimitiveProperty<T> protected constructor(override val key: Stri
 	override fun toString(): String {
 		return "${save()}"
 	}
+
+	/** @suppress */
+	operator fun getValue(config: Any, property: KProperty<*>): T? = get()
+	/** @suppress */
+	operator fun setValue(config: Any, property: KProperty<*>, value: T?) = set(value)
 }

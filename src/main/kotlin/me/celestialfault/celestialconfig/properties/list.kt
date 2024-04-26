@@ -4,6 +4,7 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import me.celestialfault.celestialconfig.Property
 import me.celestialfault.celestialconfig.Serializer
+import kotlin.reflect.KProperty
 
 class ListProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableList<T>, Property<MutableList<T>> {
 	private val list: MutableList<T> = mutableListOf()
@@ -52,4 +53,6 @@ class ListProperty<T>(override val key: String, private val serializer: Serializ
 	override fun toString(): String {
 		return "${save()}"
 	}
+
+	operator fun getValue(config: Any, prop: KProperty<*>): MutableList<T> = list
 }
