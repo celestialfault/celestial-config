@@ -1,9 +1,9 @@
-package me.celestialfault.celestialconfig
+package dev.celestialfault.celestialconfig
 
 import com.google.gson.*
-import me.celestialfault.celestialconfig.properties.ListProperty
-import me.celestialfault.celestialconfig.properties.MapProperty
-import me.celestialfault.celestialconfig.properties.ObjectProperty
+import dev.celestialfault.celestialconfig.properties.ListProperty
+import dev.celestialfault.celestialconfig.properties.MapProperty
+import dev.celestialfault.celestialconfig.properties.ObjectProperty
 import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
@@ -26,13 +26,14 @@ interface Serializer<T> {
 	/**
 	 * Built-in serialization helpers for common types
 	 */
+	@Suppress("unused")
 	companion object {
-		@JvmStatic val defaultGson: Gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
+		val defaultGson: Gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
 
 		/**
 		* [Int] serializer
 		*/
-		@JvmStatic val int = object : Serializer<Int> {
+		val int = object : Serializer<Int> {
 			override fun serialize(value: Int): JsonElement = JsonPrimitive(value)
 			override fun deserialize(element: JsonElement): Int? = if(element is JsonPrimitive && element.isNumber) element.asInt else null
 		}
@@ -40,7 +41,7 @@ interface Serializer<T> {
 		/**
 		 * [Long] serializer
 		 */
-		@JvmStatic val long = object : Serializer<Long> {
+		val long = object : Serializer<Long> {
 			override fun serialize(value: Long): JsonElement = JsonPrimitive(value)
 			override fun deserialize(element: JsonElement): Long? = if(element is JsonPrimitive && element.isNumber) element.asLong else null
 		}
@@ -48,7 +49,7 @@ interface Serializer<T> {
 		/**
 		 * [Float] serializer
 		 */
-		@JvmStatic val float = object : Serializer<Float> {
+		val float = object : Serializer<Float> {
 			override fun serialize(value: Float): JsonElement = JsonPrimitive(value)
 			override fun deserialize(element: JsonElement): Float? = if(element is JsonPrimitive && element.isNumber) element.asFloat else null
 		}
@@ -56,7 +57,7 @@ interface Serializer<T> {
 		/**
 		 * [Double] serializer
 		 */
-		@JvmStatic val double = object : Serializer<Double> {
+		val double = object : Serializer<Double> {
 			override fun serialize(value: Double): JsonElement = JsonPrimitive(value)
 			override fun deserialize(element: JsonElement): Double? = if(element is JsonPrimitive && element.isNumber) element.asDouble else null
 		}
@@ -64,7 +65,7 @@ interface Serializer<T> {
 		/**
 		 * [Short] serializer
 		 */
-		@JvmStatic val short = object : Serializer<Short> {
+		val short = object : Serializer<Short> {
 			override fun serialize(value: Short): JsonElement = JsonPrimitive(value)
 			override fun deserialize(element: JsonElement): Short? = if(element is JsonPrimitive && element.isNumber) element.asShort else null
 		}
@@ -72,7 +73,7 @@ interface Serializer<T> {
 		/**
 		 * [String] serializer
 		 */
-		@JvmStatic val string = object : Serializer<String> {
+		val string = object : Serializer<String> {
 			override fun serialize(value: String): JsonElement = JsonPrimitive(value)
 			override fun deserialize(element: JsonElement): String? = if(element is JsonPrimitive) element.asString else null
 		}
@@ -80,28 +81,23 @@ interface Serializer<T> {
 		/**
 		 * [Boolean] serializer
 		 */
-		@JvmStatic val boolean = object : Serializer<Boolean> {
+		val boolean = object : Serializer<Boolean> {
 			override fun serialize(value: Boolean): JsonElement = JsonPrimitive(value)
 			override fun deserialize(element: JsonElement): Boolean? = if(element is JsonPrimitive) element.asBoolean else null
 		}
 
 		/**
-		 * [Enum] serializer using a Java class
+		 * [Enum] serializer
 		 */
-		@JvmStatic fun <T : Enum<*>> enum(enumClass: Class<T>) = object : Serializer<T> {
-			private val enumValues = enumClass.enumConstants
+		inline fun <reified T : Enum<*>> enum() = object : Serializer<T> {
+			private val enumValues = T::class.java.enumConstants
 
 			override fun serialize(value: T): JsonElement = JsonPrimitive(value.name)
 			override fun deserialize(element: JsonElement): T = enumValues.first { it.name == element.asString }
 		}
 
 		/**
-		 * [Enum] serializer using Kotlin `reified` syntax
-		 */
-		inline fun <reified T : Enum<*>> enum() = enum(T::class.java)
-
-		/**
-		 * [ObjectProperty] serializer using a Java class
+		 * Serializer using an [ObjectProperty] type
 		 *
 		 * Note that the provided [ObjectProperty] class **must** have a constructor accepting a single
 		 * [JsonObject] parameter.
@@ -109,9 +105,9 @@ interface Serializer<T> {
 		 * In a Kotlin class, this constructor **must** either be:
 		 *
 		 * - Your primary constructor, **with no additional constructors**, using the `init` block to call `load()`; OR
-		 * - A separate constructor on its own (as shown below)
+		 * - A **secondary** constructor (as shown below)
 		 *
-		 * ## Kotlin Example
+		 * ## Example
 		 *
 		 * ```
 		 * class UserData() : ObjectProperty<UserData>("") {
@@ -124,42 +120,18 @@ interface Serializer<T> {
 		 *
 		 * val users = Property.list("users", Serializer.obj<UserData>())
 		 * ```
-		 *
-		 * ## Java Example
-		 *
-		 * ```java
-		 * public static class UserData extends ObjectProperty<UserData> {
-		 *     public UserData() {
-		 *         super("");
-		 *     }
-		 *
-		 *     public UserData(JsonObject obj) {
-		 *         this();
-		 *         load(obj);
-		 *     }
-		 *
-		 *     // place your variables here as normal
-		 * }
-		 *
-		 * public final ListProperty<UserData> users = Property.list("users", Serializer.obj(UserData::class));
-		 * ```
 		 */
-		@JvmStatic fun <T : ObjectProperty<T>> obj(obj: Class<T>) = object : Serializer<T> {
+		inline fun <reified T : ObjectProperty<T>> obj() = object : Serializer<T> {
 			override fun serialize(value: T): JsonElement = value.save()
 			override fun deserialize(element: JsonElement): T? = if(element is JsonObject) {
-				obj.getConstructor(JsonObject::class.java).newInstance(element)
+				T::class.java.getConstructor(JsonObject::class.java).newInstance(element)
 			} else null
 		}
 
 		/**
-		 * [ObjectProperty] serializer using Kotlin `reified` syntax
-		 */
-		inline fun <reified T : ObjectProperty<T>> obj() = obj(T::class.java)
-
-		/**
 		 * [MutableMap] serializer using a second serializer for contained values
 		 */
-		@JvmStatic fun <T> map(serializer: Serializer<T>) = object : Serializer<MutableMap<String, T>> {
+		fun <T> map(serializer: Serializer<T>) = object : Serializer<MutableMap<String, T>> {
 			override fun serialize(value: MutableMap<String, T>): JsonElement = JsonObject().apply {
 				value.forEach {
 					add(it.key, serializer.serialize(it.value))
@@ -184,7 +156,7 @@ interface Serializer<T> {
 		/**
 		 * [MutableList] serializer using a second serializer for contained values
 		 */
-		@JvmStatic fun <T> list(serializer: Serializer<T>) = object : Serializer<MutableList<T>> {
+		fun <T> list(serializer: Serializer<T>) = object : Serializer<MutableList<T>> {
 			override fun serialize(value: MutableList<T>): JsonElement = JsonArray().apply {
 				value.forEach {
 					add(serializer.serialize(it))
@@ -207,26 +179,18 @@ interface Serializer<T> {
 		inline fun <reified T> list() = list(findSerializer<T>())
 
 		/**
-		 * Serializer using GSON `@Expose` annotations on an arbitrary class type, such as a `data class` or `record`
+		 * Serializer using GSON `@Expose` annotations on an arbitrary class type, such as a
+		 * Kotlin `data class` or Java `record`.
 		 *
-		 * Note that the default [Gson] instance will only (de)serialize fields marked with `@Expose`;
+		 * Note that the default [Gson] instance will only (de)serialize fields annotated with `@Expose`;
 		 * you should provide your own [Gson] instance if you want behavior differently to this.
 		 *
 		 * The provided class **must** have a constructor with no arguments.
 		 */
-		@JvmOverloads
-		@JvmStatic fun <T> expose(type: Class<T>, gson: Gson = defaultGson) = object : Serializer<T> {
+		inline fun <reified T> expose(gson: Gson = defaultGson) = object : Serializer<T> {
 			override fun serialize(value: T): JsonElement? = gson.toJsonTree(value)
-			override fun deserialize(element: JsonElement): T? = gson.fromJson(element, type)
+			override fun deserialize(element: JsonElement): T? = gson.fromJson(element, T::class.java)
 		}
-
-		/**
-		 * GSON `@Expose` serializer using Kotlin `reified` syntax
-		 *
-		 * Note that the default [Gson] instance will only (de)serialize fields marked with `@Expose`;
-		 * you should provide your own [Gson] instance if you want behavior differently to this.
-		 */
-		inline fun <reified T> expose(gson: Gson = defaultGson) = expose(T::class.java, gson = gson)
 
 		/**
 		 * Find a [Serializer] providing type [T]
@@ -240,7 +204,7 @@ interface Serializer<T> {
 		inline fun <reified T> findSerializer(): Serializer<T> =
 			Companion::class.memberProperties
 				.filter { it.returnType.arguments.isNotEmpty() }
-				.first { it.returnType.arguments[0].type?.isSupertypeOf(T::class.starProjectedType) ?: false }
+				.first { it.returnType.arguments[0].type?.isSupertypeOf(T::class.starProjectedType) == true }
 				.getter.call(Companion) as Serializer<T>
 	}
 }

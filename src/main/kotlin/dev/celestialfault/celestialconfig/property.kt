@@ -1,9 +1,20 @@
-package me.celestialfault.celestialconfig
+package dev.celestialfault.celestialconfig
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonNull
 import com.google.gson.JsonPrimitive
-import me.celestialfault.celestialconfig.properties.*
+import dev.celestialfault.celestialconfig.properties.BooleanProperty
+import dev.celestialfault.celestialconfig.properties.CharProperty
+import dev.celestialfault.celestialconfig.properties.DoubleProperty
+import dev.celestialfault.celestialconfig.properties.EnumProperty
+import dev.celestialfault.celestialconfig.properties.FloatProperty
+import dev.celestialfault.celestialconfig.properties.IntegerProperty
+import dev.celestialfault.celestialconfig.properties.ListProperty
+import dev.celestialfault.celestialconfig.properties.LongProperty
+import dev.celestialfault.celestialconfig.properties.MapProperty
+import dev.celestialfault.celestialconfig.properties.NoNullProperty
+import dev.celestialfault.celestialconfig.properties.ShortProperty
+import dev.celestialfault.celestialconfig.properties.StringProperty
 import kotlin.reflect.KProperty
 
 /**
@@ -31,6 +42,7 @@ interface Property<T> {
 	/**
 	 * Utility methods for getting commonly stored property types
 	 */
+	@Suppress("unused")
 	companion object {
 		/**
 		 * Create a new [String] [Property] type
@@ -38,7 +50,7 @@ interface Property<T> {
 		 * @param key	  The key that this property should be saved in the encoded JSON as
 		 * @param default The default value for this property, defaults to null
 		 */
-		@JvmStatic fun string(key: String, default: String? = null) =
+		fun string(key: String, default: String? = null) =
 			StringProperty(key, default)
 
 		/**
@@ -47,7 +59,7 @@ interface Property<T> {
 		 * @param key	  The key that this property should be saved in the encoded JSON as
 		 * @param default The default value for this property, defaults to null
 		 */
-		@JvmStatic fun boolean(key: String, default: Boolean? = null) =
+		fun boolean(key: String, default: Boolean? = null) =
 			BooleanProperty(key, default)
 
 		/**
@@ -59,7 +71,7 @@ interface Property<T> {
 		 * @param key	  The key that this property should be saved in the encoded JSON as
 		 * @param default The default value for this property, defaults to null
 		 */
-		@JvmStatic fun char(key: String, default: Char? = null) =
+		fun char(key: String, default: Char? = null) =
 			CharProperty(key, default)
 
 		/**
@@ -70,7 +82,7 @@ interface Property<T> {
 		 * @param min     The minimum (inclusive) value for this property
 		 * @param max     The maximum (inclusive) value for this property
 		 */
-		@JvmStatic fun int(key: String, default: Int? = null, min: Int? = null, max: Int? = null) =
+		fun int(key: String, default: Int? = null, min: Int? = null, max: Int? = null) =
 			IntegerProperty(key, default, min, max)
 
 		/**
@@ -81,7 +93,7 @@ interface Property<T> {
 		 * @param min     The minimum (inclusive) value for this property
 		 * @param max     The maximum (inclusive) value for this property
 		 */
-		@JvmStatic fun long(key: String, default: Long? = null, min: Long? = null, max: Long? = null) =
+		fun long(key: String, default: Long? = null, min: Long? = null, max: Long? = null) =
 			LongProperty(key, default, min, max)
 
 		/**
@@ -92,7 +104,7 @@ interface Property<T> {
 		 * @param min     The minimum (inclusive) value for this property
 		 * @param max     The maximum (inclusive) value for this property
 		 */
-		@JvmStatic fun short(key: String, default: Short? = null, min: Short? = null, max: Short? = null) =
+		fun short(key: String, default: Short? = null, min: Short? = null, max: Short? = null) =
 			ShortProperty(key, default, min, max)
 
 		/**
@@ -103,7 +115,7 @@ interface Property<T> {
 		 * @param min     The minimum (inclusive) value for this property
 		 * @param max     The maximum (inclusive) value for this property
 		 */
-		@JvmStatic fun float(key: String, default: Float? = null, min: Float? = null, max: Float? = null) =
+		fun float(key: String, default: Float? = null, min: Float? = null, max: Float? = null) =
 			FloatProperty(key, default, min, max)
 
 		/**
@@ -114,20 +126,8 @@ interface Property<T> {
 		 * @param min     The minimum (inclusive) value for this property
 		 * @param max     The maximum (inclusive) value for this property
 		 */
-		@JvmStatic fun double(key: String, default: Double? = null, min: Double? = null, max: Double? = null) =
+		fun double(key: String, default: Double? = null, min: Double? = null, max: Double? = null) =
 			DoubleProperty(key, default, min, max)
-
-		/**
-		 * Create a new [Enum] [Property] type, using a provided [Serializer]
-		 *
-		 * ## Example usage:
-		 *
-		 * ```java
-		 * public final Property<UserType> type = Property.enum("type", UserType.class, UserType.GUEST)
-		 * ```
-		 */
-		@JvmStatic fun <T : Enum<*>> enum(key: String, enumClass: Class<T>, default: T? = null): EnumProperty<T> =
-			EnumProperty(key, default, enumClass)
 
 		/**
 		 * Create a new [Enum] [Property] type
@@ -138,13 +138,13 @@ interface Property<T> {
 		 * val property = Property.enum<UserType>(key = "type", default = UserType.GUEST)
 		 * ```
 		 */
-		inline fun <reified T : Enum<*>> enum(key: String, default: T? = null): EnumProperty<T> =
-			enum(key, T::class.java, default)
+		inline fun <reified T : Enum<*>> enum(key: String, default: T? = null, saveAsOrdinal: Boolean = false): EnumProperty<T> =
+			EnumProperty(key, default, T::class.java, saveAsOrdinal)
 
 		/**
 		 * Create a new [MutableMap] [Property] type
 		 */
-		@JvmStatic fun <T> map(key: String, serializer: Serializer<T>, defaults: Map<String, T>? = null): MapProperty<T> =
+		fun <T> map(key: String, serializer: Serializer<T>, defaults: Map<String, T>? = null): MapProperty<T> =
 			MapProperty(key, serializer, defaults)
 
 		/**
@@ -162,7 +162,7 @@ interface Property<T> {
 		/**
 		 * Create a new [MutableList] [Property] type
 		 */
-		@JvmStatic fun <T> list(key: String, serializer: Serializer<T>, defaults: List<T>? = null): ListProperty<T> =
+		fun <T> list(key: String, serializer: Serializer<T>, defaults: List<T>? = null): ListProperty<T> =
 			ListProperty(key, serializer, defaults)
 
 		/**
@@ -231,7 +231,7 @@ abstract class PrimitiveProperty<T> protected constructor(override val key: Stri
 	}
 
 	/**
-	 * Wrap the current [PrimitiveProperty] in a [NoNullProperty], enforcing that the stored value cannot be null
+	 * Wrap the current [PrimitiveProperty] in a [dev.celestialfault.celestialconfig.properties.NoNullProperty], enforcing that the stored value cannot be null
 	 */
 	fun notNullable() = NoNullProperty(this)
 

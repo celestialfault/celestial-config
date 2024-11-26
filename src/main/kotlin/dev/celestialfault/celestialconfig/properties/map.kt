@@ -1,9 +1,9 @@
-package me.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig.properties
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import me.celestialfault.celestialconfig.Property
-import me.celestialfault.celestialconfig.Serializer
+import dev.celestialfault.celestialconfig.Property
+import dev.celestialfault.celestialconfig.Serializer
 import kotlin.reflect.KProperty
 
 class MapProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableMap<String, T>, Property<MutableMap<String, T>> {

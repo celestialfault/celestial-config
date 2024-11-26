@@ -1,4 +1,4 @@
-package me.celestialfault.celestialconfig
+package dev.celestialfault.celestialconfig
 
 import com.google.gson.Gson
 import com.google.gson.JsonElement

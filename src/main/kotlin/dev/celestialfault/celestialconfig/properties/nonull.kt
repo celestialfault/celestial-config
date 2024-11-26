@@ -1,9 +1,9 @@
-package me.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig.properties
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonPrimitive
-import me.celestialfault.celestialconfig.PrimitiveProperty
-import me.celestialfault.celestialconfig.Property
+import dev.celestialfault.celestialconfig.PrimitiveProperty
+import dev.celestialfault.celestialconfig.Property
 import kotlin.reflect.KProperty
 
 /**

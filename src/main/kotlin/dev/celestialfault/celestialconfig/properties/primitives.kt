@@ -1,7 +1,7 @@
-package me.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig.properties
 
 import com.google.gson.JsonPrimitive
-import me.celestialfault.celestialconfig.PrimitiveProperty
+import dev.celestialfault.celestialconfig.PrimitiveProperty
 
 class StringProperty(key: String, default: String? = null) : PrimitiveProperty<String>(key, default) {
 	override fun toPrimitive(value: String): JsonPrimitive = JsonPrimitive(value)
@@ -12,7 +12,7 @@ class StringProperty(key: String, default: String? = null) : PrimitiveProperty<S
 class CharProperty(key: String, default: Char? = null) : PrimitiveProperty<Char>(key, default) {
 	override fun toPrimitive(value: Char): JsonPrimitive = JsonPrimitive(value.toString())
 	override fun isValid(primitive: JsonPrimitive): Boolean = primitive.isString && primitive.asString.isNotEmpty()
-	override fun fromPrimitive(primitive: JsonPrimitive): Char = primitive.asString.toCharArray()[0]
+	override fun fromPrimitive(primitive: JsonPrimitive): Char = primitive.asString.toCharArray().first()
 }
 
 class BooleanProperty(key: String, default: Boolean? = null) : PrimitiveProperty<Boolean>(key, default) {

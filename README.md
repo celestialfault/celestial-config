@@ -1,14 +1,13 @@
 # celestial-config
 
-[![celestial-config badge](https://maven.celestialfault.dev/api/badge/latest/snapshots/me/celestialfault/celestial-config?color=40c14a&name=celestial-config&prefix=v)](https://maven.celestialfault.dev/)
+[![celestial-config badge](https://maven.celestialfault.dev/api/badge/latest/snapshots/dev/celestialfault/celestial-config?color=40c14a&name=celestial-config&prefix=v)](https://maven.celestialfault.dev/)
 
-A utility library on top of GSON for use with configuration files; this abstracts the loading and
-saving of JSON files for you, so all you need to worry about is what variables you need to save,
-and in what manner.
+A Kotlin library designed to make using GSON slightly more convenient, so all you need to worry about is what
+data you need stored, instead of having to write the same standard boilerplate every time.
 
-This project is primarily designed for use in Kotlin, but does support use in pure Java (albeit at a lower priority).
+Note that while you may be able to use this in pure Java (with a substantial amount of effort), this is not tested
+nor supported in any capacity.
 
 ## Usage
 
-Add this as a dependency in your build configuration from [my Maven repository](https://maven.celestialfault.dev/);
-an example usage of the library is available in the [`example`](example) directory.
+Add this as a dependency in your build configuration from [my Maven repository](https://maven.celestialfault.dev/).

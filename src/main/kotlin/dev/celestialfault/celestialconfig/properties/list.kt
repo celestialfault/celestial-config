@@ -1,13 +1,13 @@
-package me.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig.properties
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
-import me.celestialfault.celestialconfig.Property
-import me.celestialfault.celestialconfig.Serializer
+import dev.celestialfault.celestialconfig.Property
+import dev.celestialfault.celestialconfig.Serializer
 import kotlin.reflect.KProperty
 
 class ListProperty<T>(override val key: String, private val serializer: Serializer<T>) : MutableList<T>, Property<MutableList<T>> {
-	private val list: MutableList<T> = mutableListOf()
+	private var list: MutableList<T> = mutableListOf()
 
 	constructor(key: String, serializer: Serializer<T>, defaults: List<T>?) : this(key, serializer) {
 		defaults?.let { this.list.addAll(it) }
@@ -45,9 +45,7 @@ class ListProperty<T>(override val key: String, private val serializer: Serializ
 
 	override fun load(element: JsonElement) {
 		if(element !is JsonArray) return
-		element
-			.mapNotNull { serializer.deserialize(it) }
-			.forEach { add(it) }
+		this.list = element.mapNotNull { serializer.deserialize(it) }.toMutableList()
 	}
 
 	override fun toString(): String {

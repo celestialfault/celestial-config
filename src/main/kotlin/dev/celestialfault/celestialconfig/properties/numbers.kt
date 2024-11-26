@@ -1,7 +1,7 @@
-package me.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig.properties
 
 import com.google.gson.JsonPrimitive
-import me.celestialfault.celestialconfig.PrimitiveProperty
+import dev.celestialfault.celestialconfig.PrimitiveProperty
 
 /**
  * Basic property type for all [Number]-based values, such as integers

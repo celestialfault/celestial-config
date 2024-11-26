@@ -3,11 +3,11 @@ import java.net.URL
 
 plugins {
 	id("maven-publish")
-	kotlin("jvm") version "1.9.23"
+	kotlin("jvm") version "2.0.21"
 	id("org.jetbrains.dokka") version "1.9.20"
 }
 
-group = "me.celestialfault"
+group = "dev.celestialfault"
 
 repositories {
 	mavenCentral()
@@ -33,7 +33,7 @@ publishing {
 	repositories {
 		maven {
 			name = "celestialfault"
-			url = uri("https://maven.odinair.xyz/snapshots")
+			url = uri("https://maven.celestialfault.dev/snapshots")
 			credentials {
 				username = project.findProperty("maven.username") as String? ?: System.getenv("MAVEN_NAME")
 				password = project.findProperty("maven.secret") as String? ?: System.getenv("MAVEN_SECRET")

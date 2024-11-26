@@ -1,12 +1,17 @@
-package me.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig.properties
 
 import com.google.gson.JsonPrimitive
-import me.celestialfault.celestialconfig.PrimitiveProperty
+import dev.celestialfault.celestialconfig.PrimitiveProperty
 
-class EnumProperty<T : Enum<*>>(key: String, default: T?, private val enumClass: Class<T>) : PrimitiveProperty<T>(key, default) {
+class EnumProperty<T : Enum<*>>(
+	key: String,
+	default: T?,
+	private val enumClass: Class<T>,
+	private val saveAsOrdinal: Boolean = false,
+) : PrimitiveProperty<T>(key, default) {
 	private val enumValues: Array<T> get() = enumClass.enumConstants
 
-	override fun toPrimitive(value: T): JsonPrimitive = JsonPrimitive(value.name)
+	override fun toPrimitive(value: T): JsonPrimitive = if(saveAsOrdinal) JsonPrimitive(value.ordinal) else JsonPrimitive(value.name)
 
 	override fun isValid(primitive: JsonPrimitive): Boolean =
 		(primitive.isNumber && primitive.asNumber.toInt().let { ordinal -> ordinal in enumValues.indices })

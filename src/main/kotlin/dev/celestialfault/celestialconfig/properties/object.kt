@@ -1,9 +1,9 @@
-package me.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig.properties
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import me.celestialfault.celestialconfig.Property
-import me.celestialfault.celestialconfig.VariableLookup
+import dev.celestialfault.celestialconfig.Property
+import dev.celestialfault.celestialconfig.VariableLookup
 
 /**
  * [Property] superclass type used to store variables in a JSON object with differing types
@@ -27,7 +27,7 @@ import me.celestialfault.celestialconfig.VariableLookup
  */
 open class ObjectProperty<T>(override val key: String) : Property<T>, VariableLookup() {
 	/**
-	 * @see me.celestialfault.celestialconfig.AbstractConfig.unacceptedKeys
+	 * @see dev.celestialfault.celestialconfig.AbstractConfig.unacceptedKeys
 	 */
 	protected val unacceptedKeys: MutableMap<String, JsonElement> = mutableMapOf()
 

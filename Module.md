@@ -2,11 +2,11 @@
 
 A simple wrapper around GSON for use with configuration files, written in Kotlin.
 
-# Package me.celestialfault.celestialconfig
+# Package dev.celestialfault.celestialconfig
 
 Core configuration classes
 
-# Package me.celestialfault.celestialconfig.properties
+# Package dev.celestialfault.celestialconfig.properties
 
 Commonly used built-in property types
 
