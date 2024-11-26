@@ -24,17 +24,17 @@ import kotlin.io.path.createParentDirectories
  * }
  *
  * object MyConfig : AbstractConfig(path) {
- *     val intKey = Property.int(key = "int", default = 0)
+ *     var intKey by Property.int(key = "int", default = 0)
  *
  *     object UserData : ObjectProperty<UserData>("user_data") {
- *         val enumKey = Property.enum<UserType>("type", default = UserType.USER)
+ *         var enumKey by Property.enum<UserType>("type", default = UserType.USER)
  *     }
  * }
  *
  * fun main() {
- *     println(MyConfig.intKey.get()) // 0
- *     MyConfig.intKey.set(1)
- *     println(MyConfig.intKey.get()) // 1
+ *     println(MyConfig.intKey) // 0
+ *     MyConfig.intKey = 1
+ *     println(MyConfig.intKey) // 1
  *     MyConfig.save()
  *     // subsequent .load() calls will result in the first intKey read being 1
  * }
