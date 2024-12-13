@@ -1,9 +1,8 @@
-package dev.celestialfault.celestialconfig.properties
+package dev.celestialfault.celestialconfig
 
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
-import dev.celestialfault.celestialconfig.Property
-import dev.celestialfault.celestialconfig.VariableLookup
+import kotlin.reflect.KProperty
 
 /**
  * [Property] superclass type used to store variables in a JSON object with differing types
@@ -25,9 +24,13 @@ import dev.celestialfault.celestialconfig.VariableLookup
  * }
  * ```
  */
-open class ObjectProperty<T>(override val key: String) : Property<T>, VariableLookup() {
+abstract class ObjectProperty<T> protected constructor(override val key: String) : Property<T>, VariableLookup() {
+	final override var dirty: Boolean
+		get() = walkProperties().any { it.dirty }
+		set(_) {}
+
 	/**
-	 * @see dev.celestialfault.celestialconfig.AbstractConfig.unacceptedKeys
+	 * @see AbstractConfig.unacceptedKeys
 	 */
 	protected val unacceptedKeys: MutableMap<String, JsonElement> = mutableMapOf()
 
@@ -45,6 +48,10 @@ open class ObjectProperty<T>(override val key: String) : Property<T>, VariableLo
 			variables[it.key]?.load(it.value) ?: run { unacceptedKeys.put(it.key, it.value) }
 		}
 	}
+
+	@Suppress("UNCHECKED_CAST")
+	final override fun getValue(config: Any, property: KProperty<*>): T = this as T
+	final override fun setValue(config: Any, property: KProperty<*>, value: T) = throw UnsupportedOperationException()
 
 	override fun toString(): String {
 		return "${save()}"

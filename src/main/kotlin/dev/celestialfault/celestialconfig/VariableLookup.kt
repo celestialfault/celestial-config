@@ -1,6 +1,6 @@
 package dev.celestialfault.celestialconfig
 
-import dev.celestialfault.celestialconfig.properties.ObjectProperty
+import dev.celestialfault.celestialconfig.ObjectProperty
 import org.jetbrains.annotations.ApiStatus.Internal
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
@@ -45,4 +45,11 @@ abstract class VariableLookup protected constructor() {
 		// delegates are weird
 		(prop as KProperty1<Any, *>).apply { isAccessible = true }.getDelegate(it)
 			.takeIf { it is Property<*> } as Property<*>?
+
+	protected fun walkProperties(): Sequence<Property<*>> = sequence {
+		variables.values.forEach {
+			yield(it)
+			if(it is VariableLookup) yieldAll(it.walkProperties())
+		}
+	}
 }

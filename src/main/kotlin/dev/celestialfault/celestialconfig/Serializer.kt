@@ -1,22 +1,20 @@
 package dev.celestialfault.celestialconfig
 
 import com.google.gson.*
-import dev.celestialfault.celestialconfig.properties.ListProperty
-import dev.celestialfault.celestialconfig.properties.MapProperty
-import dev.celestialfault.celestialconfig.properties.ObjectProperty
+import java.math.BigDecimal
+import java.math.BigInteger
 import kotlin.reflect.full.isSupertypeOf
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.full.starProjectedType
 
 /**
- * Serialization interface for loading and saving data to/from JSON, utilized by more complex property types
- * such as [ListProperty] and [MapProperty].
+ * Serialization interface for loading and saving data to/from JSON
  */
-interface Serializer<T> {
+interface Serializer<T : Any?> {
 	/**
 	 * Turn a runtime value into a JSON element suitable for saving to disk
 	 */
-	fun serialize(value: T): JsonElement?
+	fun serialize(value: T): JsonElement
 
 	/**
 	 * Turn a JSON element from disk into a usable type for runtime
@@ -30,45 +28,50 @@ interface Serializer<T> {
 	companion object {
 		val defaultGson: Gson = GsonBuilder().excludeFieldsWithoutExposeAnnotation().create()
 
+		inline fun <reified T : Number> number(min: T? = null, max: T? = null) = object : Serializer<T> {
+			override fun serialize(value: T): JsonElement = JsonPrimitive(value)
+
+			override fun deserialize(element: JsonElement): T? {
+				if(element is JsonPrimitive && element.isNumber) {
+					return when(T::class) {
+						Int::class -> element.asInt
+						BigInteger::class -> element.asBigInteger
+						Long::class -> element.asLong
+						Float::class -> element.asFloat
+						Double::class -> element.asDouble
+						BigDecimal::class -> element.asBigDecimal
+						Short::class -> element.asShort
+						else -> throw IllegalStateException("Unknown type ${T::class}")
+					} as T
+				}
+				return null
+			}
+		}
+
 		/**
 		* [Int] serializer
 		*/
-		val int = object : Serializer<Int> {
-			override fun serialize(value: Int): JsonElement = JsonPrimitive(value)
-			override fun deserialize(element: JsonElement): Int? = if(element is JsonPrimitive && element.isNumber) element.asInt else null
-		}
+		val int = number<Int>()
 
 		/**
 		 * [Long] serializer
 		 */
-		val long = object : Serializer<Long> {
-			override fun serialize(value: Long): JsonElement = JsonPrimitive(value)
-			override fun deserialize(element: JsonElement): Long? = if(element is JsonPrimitive && element.isNumber) element.asLong else null
-		}
+		val long = number<Long>()
 
 		/**
 		 * [Float] serializer
 		 */
-		val float = object : Serializer<Float> {
-			override fun serialize(value: Float): JsonElement = JsonPrimitive(value)
-			override fun deserialize(element: JsonElement): Float? = if(element is JsonPrimitive && element.isNumber) element.asFloat else null
-		}
+		val float = number<Float>()
 
 		/**
 		 * [Double] serializer
 		 */
-		val double = object : Serializer<Double> {
-			override fun serialize(value: Double): JsonElement = JsonPrimitive(value)
-			override fun deserialize(element: JsonElement): Double? = if(element is JsonPrimitive && element.isNumber) element.asDouble else null
-		}
+		val double = number<Double>()
 
 		/**
 		 * [Short] serializer
 		 */
-		val short = object : Serializer<Short> {
-			override fun serialize(value: Short): JsonElement = JsonPrimitive(value)
-			override fun deserialize(element: JsonElement): Short? = if(element is JsonPrimitive && element.isNumber) element.asShort else null
-		}
+		val short = number<Short>()
 
 		/**
 		 * [String] serializer
@@ -89,11 +92,20 @@ interface Serializer<T> {
 		/**
 		 * [Enum] serializer
 		 */
-		inline fun <reified T : Enum<*>> enum() = object : Serializer<T> {
+		inline fun <reified T : Enum<*>> enum(saveAsOrdinal: Boolean = false) = object : Serializer<T> {
 			private val enumValues = T::class.java.enumConstants
 
-			override fun serialize(value: T): JsonElement = JsonPrimitive(value.name)
-			override fun deserialize(element: JsonElement): T = enumValues.first { it.name == element.asString }
+			override fun serialize(value: T): JsonElement =
+				if(saveAsOrdinal) JsonPrimitive(value.ordinal) else JsonPrimitive(value.name)
+
+			override fun deserialize(element: JsonElement): T? {
+				if(element !is JsonPrimitive) return null
+				return when {
+					element.isNumber && element.asInt in (0 until enumValues.size) -> enumValues[element.asInt]
+					element.isString -> enumValues.firstOrNull { it.name.equals(element.asString, ignoreCase = true) }
+					else -> null
+				}
+			}
 		}
 
 		/**
@@ -102,9 +114,9 @@ interface Serializer<T> {
 		 * Note that the provided [ObjectProperty] class **must** have a constructor accepting a single
 		 * [JsonObject] parameter.
 		 *
-		 * In a Kotlin class, this constructor **must** either be:
+		 * Due to implementation limitations, this constructor **must** either be:
 		 *
-		 * - Your primary constructor, **with no additional constructors**, using the `init` block to call `load()`; OR
+		 * - Your primary constructor, **with no additional constructors**, using an `init` block to call `load()`; OR
 		 * - A **secondary** constructor (as shown below)
 		 *
 		 * ## Example
@@ -118,7 +130,7 @@ interface Serializer<T> {
 		 *     // place your variables here as normal
 		 * }
 		 *
-		 * val users = Property.list("users", Serializer.obj<UserData>())
+		 * val users by Property.of("users", Serializer.list(Serializer.obj<UserData>()))
 		 * ```
 		 */
 		inline fun <reified T : ObjectProperty<T>> obj() = object : Serializer<T> {
@@ -184,11 +196,9 @@ interface Serializer<T> {
 		 *
 		 * Note that the default [Gson] instance will only (de)serialize fields annotated with `@Expose`;
 		 * you should provide your own [Gson] instance if you want behavior differently to this.
-		 *
-		 * The provided class **must** have a constructor with no arguments.
 		 */
 		inline fun <reified T> expose(gson: Gson = defaultGson) = object : Serializer<T> {
-			override fun serialize(value: T): JsonElement? = gson.toJsonTree(value)
+			override fun serialize(value: T): JsonElement = gson.toJsonTree(value)
 			override fun deserialize(element: JsonElement): T? = gson.fromJson(element, T::class.java)
 		}
 
