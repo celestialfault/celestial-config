@@ -53,7 +53,6 @@ tasks.withType<DokkaTask>().configureEach {
 	dokkaSourceSets {
 		named("main") {
 			moduleName.set("Celestial Config")
-			includes.from("Module.md")
 			sourceLink {
 				localDirectory.set(file("src/main/kotlin"))
 				remoteUrl.set(URL("https://github.com/celestialfault/celestial-config/blob/master/src/main/kotlin"))
