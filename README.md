@@ -1,7 +1,7 @@
 # celestial-config
 
 >[!warning]
-> This branch is very outdated and isn't being maintained or recommended for production use; you're strongly recommended to use the [Kotlin rewrite branch](https://github.com/celestialfault/celestial-config/tree/rewrite/kotlin) instead.
+> This branch is very outdated and isn't being maintained or recommended for production use; you're strongly recommended to use the [Kotlin rewrite](https://github.com/celestialfault/celestial-config/tree/main) instead.
 
 [![celestial-config badge](https://maven.celestialfault.dev/api/badge/latest/releases/me/celestialfault/celestial-config?color=40c14a&name=celestial-config&prefix=v)](https://maven.celestialfault.dev/)
 
