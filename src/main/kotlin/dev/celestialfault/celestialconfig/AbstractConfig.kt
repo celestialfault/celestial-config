@@ -75,11 +75,11 @@ abstract class AbstractConfig protected constructor(
 	val dirty get() = walkProperties().any { it.dirty }
 
 	/**
-	 * Property storing the current config version from [Migrations].
+	 * Property storing the current config version from [Migrations]
 	 *
-	 * This starts at 0, and stores the current highest applied migration version upon being [load]ed.
+	 * This starts at 0, and stores the current highest applied migration version upon being [load]ed
 	 */
-	val configVersion by Property.of<Int>(Migrations.VERSION_KEY, 0)
+	val configVersion by Property.of<Int>(Migrations.VERSION_KEY, migrations?.currentVersion ?: 0)
 
 	/**
 	 * Load the configuration file saved on disk into memory, or create a new one if it doesn't exist (and [createIfMissing]
@@ -128,6 +128,8 @@ abstract class AbstractConfig protected constructor(
 			}
 		}
 	}
+
+	override fun toString(): String = variables.toString()
 
 	private companion object {
 		private val ADAPTER: TypeAdapter<JsonObject> = Gson().getAdapter(JsonObject::class.java)

@@ -24,8 +24,11 @@ class MigrationTest : AbstractConfig(Paths.get(".", "tests", "migration.json"), 
 fun main() {
 	val pre = PreMigrationTest()
 	pre.save()
+	println(pre)
 	val post = MigrationTest()
+	require(post.configVersion == 2) { "Config didn't correctly initialize the version!" }
 	post.load()
+	println(post)
 	require(post.configVersion == 2) { "Migrations did not apply correctly!" }
 	require(post.newKey == pre.oldKey) { "Migration #1 did not apply!" }
 	require(post.otherKey == "a new key") { "Migration #2 did not apply!" }

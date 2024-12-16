@@ -21,10 +21,10 @@ interface Property<T> {
 	val key: String
 
 	/**
-	 * Write the current value of this [Property] to a [JsonElement] to save.
+	 * Write the current value of this [Property] to a [JsonElement] to save
 	 *
 	 * This property won't be encoded in the saved JSON file if `null` is returned; you should instead
-	 * return [JsonNull] if you want a `null` value to be saved for this property.
+	 * return [JsonNull] if you want a `null` value to be saved for this property
 	 */
 	fun save(): JsonElement?
 

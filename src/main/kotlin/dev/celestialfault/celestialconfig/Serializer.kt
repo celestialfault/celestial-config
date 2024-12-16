@@ -49,27 +49,27 @@ interface Serializer<T : Any?> {
 		}
 
 		/**
-		* [Int] serializer
+		* [Int] serializer with no minimum or maximum
 		*/
 		val int = number<Int>()
 
 		/**
-		 * [Long] serializer
+		 * [Long] serializer with no minimum or maximum
 		 */
 		val long = number<Long>()
 
 		/**
-		 * [Float] serializer
+		 * [Float] serializer with no minimum or maximum
 		 */
 		val float = number<Float>()
 
 		/**
-		 * [Double] serializer
+		 * [Double] serializer with no minimum or maximum
 		 */
 		val double = number<Double>()
 
 		/**
-		 * [Short] serializer
+		 * [Short] serializer with no minimum or maximum
 		 */
 		val short = number<Short>()
 
