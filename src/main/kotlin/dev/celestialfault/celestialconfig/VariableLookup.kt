@@ -1,6 +1,5 @@
 package dev.celestialfault.celestialconfig
 
-import dev.celestialfault.celestialconfig.ObjectProperty
 import org.jetbrains.annotations.ApiStatus.Internal
 import kotlin.reflect.KProperty1
 import kotlin.reflect.KVisibility
@@ -9,7 +8,7 @@ import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
 /**
- * @suppress Not intended to be part of the public API
+ * @suppress Not designed to be part of the public API
  */
 @Internal
 abstract class VariableLookup protected constructor() {
@@ -46,6 +45,7 @@ abstract class VariableLookup protected constructor() {
 		(prop as KProperty1<Any, *>).apply { isAccessible = true }.getDelegate(it)
 			.takeIf { it is Property<*> } as Property<*>?
 
+	@Internal
 	protected fun walkProperties(): Sequence<Property<*>> = sequence {
 		variables.values.forEach {
 			yield(it)

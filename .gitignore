@@ -4,6 +4,9 @@ build/
 !**/src/main/**/build/
 !**/src/test/**/build/
 
+# very crude manually run tests
+tests/*.json
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws

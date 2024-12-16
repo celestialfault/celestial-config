@@ -10,7 +10,7 @@ enum class UserType {
 	ADMIN, USER, GUEST
 }
 
-object Config : AbstractConfig(Paths.get(".", "config.json")) {
+object ExampleConfig : AbstractConfig(Paths.get(".", "tests", "config.json")) {
 	// note: properties MUST be deferred ('by'), otherwise they will not do anything!
 	var int: Int by Property.of("int", default = 4)
 	val map: MutableMap<String, Int> by Property.of("intMap", Serializer.map<Int>(), mutableMapOf())
@@ -41,12 +41,12 @@ object Config : AbstractConfig(Paths.get(".", "config.json")) {
 }
 
 fun main() {
-	Config.load()
-	Config.map["v${Config.map.size}"] = Random.nextInt()
-	Config.arrayOfObjects.add(Config.ArrayObject().apply {
+	ExampleConfig.load()
+	ExampleConfig.map["v${ExampleConfig.map.size}"] = Random.nextInt()
+	ExampleConfig.arrayOfObjects.add(ExampleConfig.ArrayObject().apply {
 		a = "hello"
 	})
-	Config.nestedIntList.add(mutableListOf(1))
-	Config.variables.forEach(::println)
-	Config.save()
+	ExampleConfig.nestedIntList.add(mutableListOf(1))
+	ExampleConfig.variables.forEach(::println)
+	ExampleConfig.save()
 }

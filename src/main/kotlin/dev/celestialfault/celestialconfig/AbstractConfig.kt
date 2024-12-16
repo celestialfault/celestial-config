@@ -5,6 +5,7 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonWriter
+import dev.celestialfault.celestialconfig.migrations.Migrations
 import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
@@ -57,6 +58,10 @@ abstract class AbstractConfig protected constructor(
 	 */
 	@set:Deprecated("This has been moved to a constructor parameter, and may be made a `val` in the future.")
 	protected var indent: String = "\t",
+	/**
+	 * Migrations to apply to this config upon load
+	 */
+	protected val migrations: Migrations? = null,
 ) : VariableLookup() {
 
 	/**
@@ -68,6 +73,13 @@ abstract class AbstractConfig protected constructor(
 	 * Returns `true` if any [Property] has unsaved changes
 	 */
 	val dirty get() = walkProperties().any { it.dirty }
+
+	/**
+	 * Property storing the current config version from [Migrations].
+	 *
+	 * This starts at 0, and stores the current highest applied migration version upon being [load]ed.
+	 */
+	val configVersion by Property.of<Int>(Migrations.VERSION_KEY, 0)
 
 	/**
 	 * Load the configuration file saved on disk into memory, or create a new one if it doesn't exist (and [createIfMissing]
@@ -85,6 +97,7 @@ abstract class AbstractConfig protected constructor(
 
 		FileReader(configFile).use { reader ->
 			val data = ADAPTER.fromJson(reader)
+			migrations?.apply(data)
 			data.entrySet().forEach { entry: Map.Entry<String, JsonElement> ->
 				val k = entry.key
 				val v = entry.value
