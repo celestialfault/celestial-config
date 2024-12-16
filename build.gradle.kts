@@ -33,7 +33,7 @@ publishing {
 	repositories {
 		maven {
 			name = "celestialfault"
-			url = uri("https://maven.celestialfault.dev/snapshots")
+			url = uri("https://maven.celestialfault.dev/releases")
 			credentials {
 				username = project.findProperty("maven.username") as String? ?: System.getenv("MAVEN_NAME")
 				password = project.findProperty("maven.secret") as String? ?: System.getenv("MAVEN_SECRET")
@@ -55,7 +55,7 @@ tasks.withType<DokkaTask>().configureEach {
 			moduleName.set("Celestial Config")
 			sourceLink {
 				localDirectory.set(file("src/main/kotlin"))
-				remoteUrl.set(URL("https://github.com/celestialfault/celestial-config/blob/master/src/main/kotlin"))
+				remoteUrl.set(URL("https://github.com/celestialfault/celestial-config/blob/main/src/main/kotlin"))
 				remoteLineSuffix.set("#L")
 			}
 		}
