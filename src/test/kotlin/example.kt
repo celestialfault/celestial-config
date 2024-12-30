@@ -19,6 +19,8 @@ object ExampleConfig : AbstractConfig(Paths.get(".", "tests", "config.json")) {
 
 	val nestedIntList: MutableList<MutableList<Int>> by Property.of("nestedList", Serializer.list(Serializer.list<Int>()), mutableListOf())
 
+	var coerced by Property.of("coerced", Serializer.number(max = 100), 1)
+
 	// object properties MUST be an `object` to be properly nested within configurations
 	object Inner : ObjectProperty<Inner>("inner") {
 		// access with Config.Inner.string

@@ -33,7 +33,7 @@ interface Serializer<T : Any?> {
 
 			override fun deserialize(element: JsonElement): T? {
 				if(element is JsonPrimitive && element.isNumber) {
-					return when(T::class) {
+					val value = when(T::class) {
 						Int::class -> element.asInt
 						BigInteger::class -> element.asBigInteger
 						Long::class -> element.asLong
@@ -43,6 +43,7 @@ interface Serializer<T : Any?> {
 						Short::class -> element.asShort
 						else -> throw IllegalStateException("Unknown type ${T::class}")
 					} as T
+					return coerce(value, min, max)
 				}
 				return null
 			}
@@ -92,9 +93,7 @@ interface Serializer<T : Any?> {
 		/**
 		 * [Enum] serializer
 		 */
-		inline fun <reified T : Enum<*>> enum(saveAsOrdinal: Boolean = false) = object : Serializer<T> {
-			private val enumValues = T::class.java.enumConstants
-
+		fun <T : Enum<T>> enum(enumValues: Array<T>, saveAsOrdinal: Boolean = false) = object : Serializer<T> {
 			override fun serialize(value: T): JsonElement =
 				if(saveAsOrdinal) JsonPrimitive(value.ordinal) else JsonPrimitive(value.name)
 
@@ -107,6 +106,11 @@ interface Serializer<T : Any?> {
 				}
 			}
 		}
+
+		/**
+		 * [Enum] serializer
+		 */
+		inline fun <reified T : Enum<T>> enum(saveAsOrdinal: Boolean = false) = enum(enumValues<T>(), saveAsOrdinal)
 
 		/**
 		 * Serializer using an [ObjectProperty] type

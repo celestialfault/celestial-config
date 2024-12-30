@@ -5,7 +5,12 @@ import com.google.gson.JsonPrimitive
 import org.jetbrains.annotations.ApiStatus.Internal
 
 /**
- * Migrations applied to the loaded [JsonObject] before being applied to the underlying properties
+ * Simple migration utility, applied to the loaded [JsonObject] before being loaded by the underlying properties
+ *
+ * **Note:** Removing migrations is **not** supported, and will result in existing configurations no longer loading
+ * when [apply] is called; you should instead opt to make any such migrations you need to remove a noop
+ *
+ * @see Migration
  */
 class Migrations private constructor(private val migrations: MutableMap<Int, Migration>) {
 
@@ -14,11 +19,17 @@ class Migrations private constructor(private val migrations: MutableMap<Int, Mig
 	 */
 	val currentVersion: Int get() = migrations.keys.maxOrNull() ?: 0
 
+	/**
+	 * Applies all applicable [Migration]s to the provided [JsonObject]
+	 *
+	 * @see Migration
+	 * @see VERSION_KEY
+	 */
 	@Internal
 	fun apply(json: JsonObject) {
 		val version = json.get(VERSION_KEY)?.takeIf { it is JsonPrimitive && it.isNumber }?.asInt ?: 0
 
-		check(version <= currentVersion) { "Unrecognized config version!" }
+		require(version !in 0..currentVersion) { "Unrecognized config version!" }
 		if(version == currentVersion) return
 
 		val toRun = migrations.filter { it.key > version }.toSortedMap()
@@ -29,11 +40,20 @@ class Migrations private constructor(private val migrations: MutableMap<Int, Mig
 		}
 	}
 
+	/**
+	 * Migration builder provided by [create]
+	 */
 	class Builder @Internal constructor() {
 		private val migrations = mutableMapOf<Int, Migration>()
 
-		fun add(id: Int? = null, migration: Migration) {
-			migrations.put(id ?: ((migrations.keys.maxOrNull() ?: 0) + 1), migration)
+		/**
+		 * Register a new [Migration] to apply
+		 *
+		 * @param id        Optional version ID; this must be unique. Defaults to `max() + 1` if omitted
+		 * @param migration The [Migration] to run
+		 */
+		fun add(id: Int = ((migrations.keys.maxOrNull() ?: 0) + 1), migration: Migration) {
+			migrations.put(id, migration)
 		}
 
 		@Internal
@@ -43,6 +63,11 @@ class Migrations private constructor(private val migrations: MutableMap<Int, Mig
 	}
 
 	companion object {
+		/**
+		 * The key used in configuration files for storing the current migration version
+		 *
+		 * The value stored under this key (if any) **must** be a number within the range 0 .. [Migrations.currentVersion]
+		 */
 		const val VERSION_KEY = "configVersion"
 
 		/**
@@ -52,8 +77,15 @@ class Migrations private constructor(private val migrations: MutableMap<Int, Mig
 		 *
 		 * ```kt
 		 * val migrations = Migrations.create {
-		 *     add { it.add("new", it.remove("old")) } // simple property rename
+		 *     // simple property rename
+		 *     add { it.add("new", it.remove("old")) }
+		 *
 		 *     // anything you can accomplish by modifying the underlying JsonObject you can do with migrations
+		 *     add { it.addProperty("theAnswerToLife", 42) }
+		 *
+		 *     // note that you are working entirely outside the strict typing safety properties provide,
+		 *     // and as such you should ensure to be careful with any changes you make - properties will
+		 *     // silently discard anything that isn't of the correct type
 		 * }
 		 *
 		 * object Config : AbstractConfig(..., migrations = migrations) { ... }

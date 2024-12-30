@@ -60,6 +60,8 @@ abstract class AbstractConfig protected constructor(
 	protected var indent: String = "\t",
 	/**
 	 * Migrations to apply to this config upon load
+	 *
+	 * @see Migrations
 	 */
 	protected val migrations: Migrations? = null,
 ) : VariableLookup() {
@@ -71,13 +73,21 @@ abstract class AbstractConfig protected constructor(
 
 	/**
 	 * Returns `true` if any [Property] has unsaved changes
+	 *
+	 * This may also be manually set if you rely on this to only save when changes have been made, and you need to
+	 * make changes to the value of a mutable property (like a list or map)
 	 */
-	val dirty get() = walkProperties().any { it.dirty }
+	var dirty: Boolean = false
+		get() = field || walkProperties().any { it.dirty }
 
 	/**
 	 * Property storing the current config version from [Migrations]
 	 *
-	 * This starts at 0, and stores the current highest applied migration version upon being [load]ed
+	 * This value initially starts at the value of [Migrations.currentVersion] on newly created configurations,
+	 * or `0` if no migrations exist
+	 *
+	 * If a configuration file is loaded without a `configVersion` key present, [Migrations] will treat it
+	 * as if it was set to `0`
 	 */
 	val configVersion by Property.of<Int>(Migrations.VERSION_KEY, migrations?.currentVersion ?: 0)
 
@@ -86,7 +96,7 @@ abstract class AbstractConfig protected constructor(
 	 * was not set to `false`)
 	 */
 	@Throws(IOException::class)
-	fun load() {
+	open fun load() {
 		val configFile = path.toFile()
 		if(!configFile.exists()) {
 			if(createIfMissing) {
@@ -98,10 +108,15 @@ abstract class AbstractConfig protected constructor(
 		FileReader(configFile).use { reader ->
 			val data = ADAPTER.fromJson(reader)
 			migrations?.apply(data)
-			data.entrySet().forEach { entry: Map.Entry<String, JsonElement> ->
-				val k = entry.key
-				val v = entry.value
-				variables[k]?.load(v) ?: run { unacceptedKeys.put(k, v) }
+			data.entrySet().forEach { entry ->
+				val (k, v) = entry
+
+				val variable = variables[k]
+				if(variable == null) {
+					unacceptedKeys.put(k, v)
+					return@forEach
+				}
+				variables[k]?.load(v)
 			}
 		}
 	}
@@ -110,7 +125,7 @@ abstract class AbstractConfig protected constructor(
 	 * Save all variables to the configuration file on disk
 	 */
 	@Throws(IOException::class)
-	fun save() {
+	open fun save() {
 		val configFile = path.toFile()
 		path.toAbsolutePath().createParentDirectories()
 		FileWriter(configFile).use { writer ->
