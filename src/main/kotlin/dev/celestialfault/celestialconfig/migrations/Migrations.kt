@@ -29,7 +29,7 @@ class Migrations private constructor(private val migrations: MutableMap<Int, Mig
 	fun apply(json: JsonObject) {
 		val version = json.get(VERSION_KEY)?.takeIf { it is JsonPrimitive && it.isNumber }?.asInt ?: 0
 
-		require(version !in 0..currentVersion) { "Unrecognized config version!" }
+		if(version > currentVersion) throw ConfigTooNewException("Unrecognized config version!")
 		if(version == currentVersion) return
 
 		val toRun = migrations.filter { it.key > version }.toSortedMap()
