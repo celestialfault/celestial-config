@@ -1,5 +1,9 @@
 # celestial-config
 
+**This project now lives on [Codeberg](https://codeberg.org/celestialfault/celestial-config)**
+
+-----
+
 [![celestial-config badge](https://maven.celestialfault.dev/api/badge/latest/snapshots/dev/celestialfault/celestial-config?color=40c14a&name=celestial-config&prefix=v)](https://maven.celestialfault.dev/)
 
 This is a JVM Kotlin library acting as a wrapper around GSON, intending to make using it much less cumbersome when all
